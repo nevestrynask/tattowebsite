@@ -699,6 +699,10 @@ h2.display {
     color: var(--red);
 }
 
+.stat b[data-prefix]::before {
+    content: attr(data-prefix);
+}
+
 .stat span {
     color: var(--muted);
     font-size: 14px;
@@ -860,6 +864,7 @@ h2.display {
     padding: 20px;
     opacity: 0;
     visibility: hidden;
+    overscroll-behavior: contain;
     transition:
         opacity 0.3s,
         visibility 0.3s;
@@ -918,9 +923,63 @@ h2.display {
     color: var(--muted);
 }
 
+.lb-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: auto;
+}
+
+/* No celular a janela é compacta: a foto ocupa cerca de metade da tela
+   e os botões ficam sempre visíveis embaixo, sem precisar arrastar. */
 @media (max-width: 640px) {
+    .lb {
+        padding: 12px;
+        padding-bottom: max(12px, env(safe-area-inset-bottom, 0px));
+    }
     .lb-card {
-        grid-template-columns: 1fr;
+        display: flex;
+        flex-direction: column;
+        max-height: calc(100vh - 24px);
+        max-height: calc(100dvh - 24px);
+    }
+    .lb-art {
+        aspect-ratio: auto;
+        flex: none;
+        height: min(48vh, 115vw);
+        height: min(48dvh, 115vw);
+        padding: 8%;
+    }
+    .lb-art.tem-foto {
+        padding: 0;
+    }
+    .lb-art img {
+        object-fit: contain;
+    }
+    .lb-info {
+        padding: 16px;
+        gap: 8px;
+        flex: none;
+    }
+    .lb-info h3 {
+        font-size: 2.1rem;
+    }
+    .lb-info p {
+        font-size: 14px;
+        line-height: 1.45;
+    }
+    .lb-actions {
+        position: sticky;
+        bottom: 0;
+        margin-top: 6px;
+        flex-wrap: nowrap;
+    }
+    .lb-actions .btn {
+        flex: 1;
+        justify-content: center;
+        padding: 14px 12px;
+        font-size: 14px;
+        white-space: nowrap;
     }
 }
 
@@ -989,8 +1048,13 @@ h2.display {
     margin-bottom: 32px;
 }
 
-/* No celular o efeito é o mesmo do computador: os passos rolam na
-   horizontal. Aqui só deixamos os cartões um pouco menores. */
+.proc-hint {
+    display: none;
+    color: var(--muted);
+}
+
+/* No celular a página rola para baixo normalmente, mesmo com um passo
+   na tela. Os passos formam uma faixa que o dedo arrasta só para os lados. */
 @media (max-width: 860px) {
     .proc {
         padding-block: 48px;
@@ -998,10 +1062,27 @@ h2.display {
     .proc-head {
         margin-bottom: 20px;
     }
+    .proc-pin {
+        margin-inline: calc(-1 * var(--gutter));
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        scroll-padding-inline: var(--gutter);
+        overscroll-behavior-x: contain;
+        -webkit-overflow-scrolling: touch;
+    }
+    .proc-track {
+        padding-inline: var(--gutter);
+    }
     .panel {
+        scroll-snap-align: start;
         width: 82vw;
         min-height: 320px;
         padding: 22px;
+    }
+    .proc-hint {
+        display: block;
+        margin-top: 4px;
+        text-align: right;
     }
     .panel .n {
         font-size: 5rem;
