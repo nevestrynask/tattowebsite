@@ -1,0 +1,660 @@
+<!doctype html>
+<html lang="pt-br">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+        <title>Duda Neves Tatto</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Familjen+Grotesk:wght@400;500;600&family=Pirata+One&display=swap"
+            rel="stylesheet"
+        />
+        <link rel="stylesheet" href="style.css" />
+    </head>
+    <body>
+        <!-- DESENHOS REUTILIZÁVEIS (estrela, coração, adaga...). Para trocar um desenho, edite o <symbol> correspondente. -->
+        <svg width="0" height="0" style="position: absolute" aria-hidden="true" focusable="false">
+            <defs>
+                <symbol id="s-star" viewBox="0 0 100 100">
+                    <path d="M50 4 L58 42 L96 50 L58 58 L50 96 L42 58 L4 50 L42 42Z" />
+                    <circle cx="50" cy="50" r="6" />
+                </symbol>
+                <symbol id="s-heart" viewBox="0 0 100 100">
+                    <path
+                        d="M50 90 C8 60 4 30 25 19 C38 13 48 21 50 30 C52 21 62 13 75 19 C96 30 92 60 50 90Z"
+                    />
+                    <path d="M30 32 C26 36 25 42 28 48" />
+                </symbol>
+                <symbol id="s-dagger" viewBox="0 0 100 100">
+                    <path d="M50 4 L58 58 L50 64 L42 58Z" />
+                    <path d="M50 12 V58" />
+                    <path d="M24 64 Q50 74 76 64 V71 Q50 81 24 71Z" />
+                    <path d="M47 76 H53 V90 H47Z" />
+                    <circle cx="50" cy="94" r="5" />
+                </symbol>
+                <symbol id="s-moon" viewBox="0 0 100 100">
+                    <path d="M68 8 A42 42 0 1 0 92 70 A34 34 0 1 1 68 8Z" />
+                    <circle cx="78" cy="30" r="3" />
+                </symbol>
+                <symbol id="s-eye" viewBox="0 0 100 100">
+                    <path d="M4 50 Q50 8 96 50 Q50 92 4 50Z" />
+                    <circle cx="50" cy="50" r="15" />
+                    <circle cx="50" cy="50" r="5" />
+                    <path d="M50 10 V0 M24 20 L18 12 M76 20 L82 12" />
+                </symbol>
+                <symbol id="s-flower" viewBox="0 0 100 100">
+                    <g>
+                        <ellipse cx="50" cy="24" rx="12" ry="20" />
+                        <ellipse cx="50" cy="24" rx="12" ry="20" transform="rotate(72 50 50)" />
+                        <ellipse cx="50" cy="24" rx="12" ry="20" transform="rotate(144 50 50)" />
+                        <ellipse cx="50" cy="24" rx="12" ry="20" transform="rotate(216 50 50)" />
+                        <ellipse cx="50" cy="24" rx="12" ry="20" transform="rotate(288 50 50)" />
+                        <circle cx="50" cy="50" r="7" />
+                    </g>
+                </symbol>
+                <symbol id="s-bolt" viewBox="0 0 100 100">
+                    <path d="M60 4 L22 56 H46 L38 96 L78 40 H53Z" />
+                </symbol>
+                <symbol id="s-snake" viewBox="0 0 100 100">
+                    <path
+                        d="M20 90 C-4 70 28 56 50 62 C80 70 90 40 62 36 C34 32 30 12 56 8 C68 6 76 12 78 18"
+                    />
+                    <circle cx="80" cy="20" r="2.5" />
+                    <path d="M82 17 L94 12 M82 20 L94 22" />
+                </symbol>
+            </defs>
+        </svg>
+
+        <!-- AVISO DE ESBOÇO (apague quando o site estiver pronto) -->
+        <div class="sketch-note mono">
+            Esboço · textos, números e desenhos são exemplos para substituir pelo material da Duda
+        </div>
+
+        <!-- BARRA DE NAVEGAÇÃO -->
+        <header class="nav">
+            <div class="wrap">
+                <a class="logo" href="#inicio" aria-label="Duda Neves Tatto, início"
+                    >Duda Neves <span>Tatto</span></a
+                >
+                <nav class="nav-links" id="navLinks" aria-label="Principal">
+                    <a href="#sobre">História</a>
+                    <a href="#trabalhos">Trabalhos</a>
+                    <a href="#processo">Processo</a>
+                    <a href="#duvidas">Dúvidas</a>
+                    <a href="#contato">Contato</a>
+                    <a class="btn solid" href="#agendar">Agendar</a>
+                </nav>
+                <div class="nav-tools">
+                    <button
+                        class="icon-btn"
+                        id="themeBtn"
+                        type="button"
+                        aria-label="Alternar tema claro e escuro"
+                    >
+                        <svg
+                            width="18"
+                            height="18"
+                            viewBox="0 0 100 100"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="8"
+                            aria-hidden="true"
+                        >
+                            <use href="#s-moon" />
+                        </svg>
+                    </button>
+                    <button
+                        class="icon-btn"
+                        id="menuBtn"
+                        type="button"
+                        aria-label="Abrir menu"
+                        aria-expanded="false"
+                        aria-controls="navLinks"
+                    >
+                        <svg
+                            width="18"
+                            height="18"
+                            viewBox="0 0 20 20"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            aria-hidden="true"
+                        >
+                            <path d="M2 5h16M2 10h16M2 15h16" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <!-- ===== ABERTURA (HERO) ===== -->
+            <section class="hero" id="inicio">
+                <div class="float f1" data-speed="1.2">
+                    <svg viewBox="0 0 100 100"><use href="#s-heart" /></svg>
+                </div>
+                <div class="float f2" data-speed="-0.6">
+                    <svg viewBox="0 0 100 100"><use href="#s-star" /></svg>
+                </div>
+                <div class="float f3" data-speed="0.8">
+                    <svg viewBox="0 0 100 100"><use href="#s-eye" /></svg>
+                </div>
+                <div class="float f4" data-speed="-1">
+                    <svg viewBox="0 0 100 100"><use href="#s-bolt" /></svg>
+                </div>
+                <div class="hero-art" aria-hidden="true">
+                    <svg viewBox="0 0 200 400">
+                        <path class="draw" d="M100 10 L124 230 L100 250 L76 230Z" />
+                        <path class="draw" d="M100 34 V236" />
+                        <path class="draw" d="M40 250 Q100 272 160 250 L160 268 Q100 290 40 268Z" />
+                        <path class="draw" d="M92 280 H108 V352 H92Z" />
+                        <path class="draw" d="M92 298 H108 M92 316 H108 M92 334 H108" />
+                        <circle class="draw" cx="100" cy="370" r="14" />
+                        <path
+                            class="draw"
+                            d="M30 150 L36 168 L54 174 L36 180 L30 198 L24 180 L6 174 L24 168Z"
+                        />
+                        <path
+                            class="draw"
+                            d="M170 90 L175 104 L189 109 L175 114 L170 128 L165 114 L151 109 L165 104Z"
+                        />
+                    </svg>
+                </div>
+                <div class="wrap hero-grid">
+                    <div class="hero-meta mono">
+                        <span>Estúdio autoral</span><span>Agenda aberta · próximos meses</span>
+                    </div>
+                    <h1 class="display hero-name" aria-label="Duda Neves Tatto">
+                        <span class="mask"><span class="ln">Duda</span></span>
+                        <span class="mask"><span class="ln r">Neves</span></span>
+                        <span class="tat" aria-hidden="true">tatto</span>
+                    </h1>
+                    <div class="hero-bottom">
+                        <div>
+                            <p>
+                                Tatuagens autorais, desenhadas com você. Do primeiro rabisco à
+                                cicatrização, cada peça é feita para ficar.
+                            </p>
+                            <div class="hero-cta">
+                                <a class="btn solid" href="#agendar">Pedir meu horário</a>
+                                <a class="btn" href="#trabalhos">Ver trabalhos</a>
+                            </div>
+                        </div>
+                        <div class="badge" aria-hidden="true">
+                            <svg viewBox="0 0 200 200">
+                                <defs>
+                                    <path
+                                        id="circ"
+                                        d="M100 100 m-78 0 a78 78 0 1 1 156 0 a78 78 0 1 1 -156 0"
+                                    />
+                                </defs>
+                                <text
+                                    font-family="DM Mono, monospace"
+                                    font-size="16"
+                                    letter-spacing="4"
+                                    fill="currentColor"
+                                >
+                                    <textPath href="#circ">
+                                        AGENDA ABERTA • DESENHO AUTORAL • FEITO À MÃO •
+                                    </textPath>
+                                </text>
+                            </svg>
+                            <div class="core">DN</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- FAIXA COM OS ESTILOS (os textos são criados em script.js) -->
+            <div class="marquee" aria-hidden="true">
+                <div class="marquee-track" id="marquee"></div>
+            </div>
+
+            <!-- ===== SOBRE / HISTÓRIA ===== -->
+            <section class="sec" id="sobre">
+                <div class="wrap">
+                    <p class="eyebrow mono">Quem desenha</p>
+                    <div class="story">
+                        <div class="portrait">
+                            <div class="frame" id="frame">
+                                <img class="foto" src="assets/duda.jpg" alt="Duda Neves, tatuadora" />
+                            </div>
+                            <div class="stamp" aria-hidden="true">Maria Eduarda Neves</div>
+                        </div>
+                        <div>
+                            <p class="story-text" id="storyText">
+                                Desenho desde que aprendi a segurar um lápis. Troquei o caderno pela
+                                <em>pele</em> porque uma tatuagem não fica na gaveta: ela acompanha
+                                a pessoa. Cada traço nasce de uma <em>conversa</em> e sai do estúdio
+                                com o jeito de quem vai usar.
+                            </p>
+                            <div class="timeline" aria-label="Linha do tempo (exemplo)">
+                                <div class="tl">
+                                    <b>2017</b>
+                                    <p>
+                                        <strong>Primeiros traços</strong>Cadernos cheios de flash,
+                                        desenho em papel e pele de silicone.
+                                    </p>
+                                </div>
+                                <div class="tl">
+                                    <b>2019</b>
+                                    <p>
+                                        <strong>Estúdio e primeiras clientes</strong>Os primeiros
+                                        pedidos de amigos viraram agenda de espera.
+                                    </p>
+                                </div>
+                                <div class="tl">
+                                    <b>2022</b>
+                                    <p>
+                                        <strong>Estilo próprio</strong>Linha fina com peso de
+                                        blackwork e símbolos tradicionais.
+                                    </p>
+                                </div>
+                                <div class="tl">
+                                    <b>Hoje</b>
+                                    <p>
+                                        <strong>Duda Neves Tatto</strong>Um espaço para criar com
+                                        calma, em horário marcado.
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="stats">
+                                <div class="stat">
+                                    <b data-count="8">0</b><span>anos de estrada</span>
+                                </div>
+                                <div class="stat">
+                                    <b data-count="1200">0</b><span>peles marcadas</span>
+                                </div>
+                                <div class="stat">
+                                    <b data-count="100">0</b><span>% desenho autoral</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ===== TRABALHOS / PORTFÓLIO ===== -->
+            <section class="sec" id="trabalhos" style="padding-top: 0">
+                <div class="wrap">
+                    <div class="works-head">
+                        <div>
+                            <p class="eyebrow mono">Portfólio</p>
+                            <h2 class="display">Trabalhos</h2>
+                        </div>
+                        <div
+                            class="filters"
+                            id="filters"
+                            role="group"
+                            aria-label="Filtrar por estilo"
+                        ></div>
+                    </div>
+                    <div class="grid" id="grid"></div>
+                    <p class="hint" style="margin-top: 18px">
+                        Cada quadro é um espaço reservado. Aqui entram as fotos reais das tatuagens,
+                        com estilo, local e tamanho.
+                    </p>
+                </div>
+            </section>
+
+            <!-- JANELA QUE ABRE AO CLICAR EM UM TRABALHO -->
+            <div
+                class="lb"
+                id="lb"
+                role="dialog"
+                aria-modal="true"
+                aria-label="Detalhe do trabalho"
+                aria-hidden="true"
+            >
+                <div class="lb-card">
+                    <div class="lb-art" id="lbArt"></div>
+                    <div class="lb-info">
+                        <p class="mono" id="lbStyle" style="color: var(--gold)"></p>
+                        <h3 id="lbTitle"></h3>
+                        <p id="lbText"></p>
+                        <p class="mono" id="lbMeta" style="color: var(--muted)"></p>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: auto">
+                            <a class="btn solid" href="#agendar" id="lbBook">Quero algo assim</a>
+                            <button class="btn" type="button" id="lbClose">Fechar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== PROCESSO ===== -->
+            <section class="sec proc" id="processo">
+                <div class="wrap proc-head">
+                    <p class="eyebrow mono">Como funciona</p>
+                    <h2 class="display">Da ideia à pele</h2>
+                </div>
+                <div class="wrap">
+                    <div class="proc-pin" id="procPin">
+                        <div class="proc-track" id="procTrack">
+                            <article class="panel">
+                                <div>
+                                    <p class="mono tag">Passo 1 · Conversa</p>
+                                    <div class="n">I</div>
+                                </div>
+                                <div>
+                                    <h3>Você conta a ideia</h3>
+                                    <p>
+                                        Referências, significado, onde quer fazer. Pode chegar com
+                                        uma foto ou só com a vontade.
+                                    </p>
+                                </div>
+                            </article>
+                            <article class="panel">
+                                <div>
+                                    <p class="mono tag">Passo 2 · Desenho</p>
+                                    <div class="n">II</div>
+                                </div>
+                                <div>
+                                    <h3>Eu desenho para você</h3>
+                                    <p>
+                                        Nenhum desenho é copiado. A arte é criada para o seu corpo e
+                                        aprovada antes de qualquer agulha.
+                                    </p>
+                                </div>
+                            </article>
+                            <article class="panel">
+                                <div>
+                                    <p class="mono tag">Passo 3 · Sessão</p>
+                                    <div class="n">III</div>
+                                </div>
+                                <div>
+                                    <h3>Dia da tatuagem</h3>
+                                    <p>
+                                        Material descartável, ambiente limpo e pausas quando você
+                                        precisar. Café e água por minha conta.
+                                    </p>
+                                </div>
+                            </article>
+                            <article class="panel">
+                                <div>
+                                    <p class="mono tag">Passo 4 · Cuidados</p>
+                                    <div class="n">IV</div>
+                                </div>
+                                <div>
+                                    <h3>Cicatrização</h3>
+                                    <p>
+                                        Você sai com orientação por escrito e eu acompanho a
+                                        cicatrização pelo WhatsApp. Retoque incluso no prazo
+                                        combinado.
+                                    </p>
+                                </div>
+                            </article>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ===== AGENDAMENTO ===== -->
+            <section class="sec" id="agendar">
+                <div class="wrap">
+                    <p class="eyebrow mono">Agendamento</p>
+                    <h2 class="display">Peça seu horário</h2>
+                    <p class="hint" style="margin-top: 16px; max-width: 56ch">
+                        Monte seu pedido ao lado. A ficha mostra o resumo e envia tudo pronto para o
+                        WhatsApp da Duda, que confirma o horário e combina o sinal.
+                    </p>
+                    <form class="book" id="bookForm" novalidate>
+                        <div>
+                            <fieldset>
+                                <legend><span>1</span>Estilo</legend>
+                                <div
+                                    class="chips"
+                                    id="styleChips"
+                                    role="group"
+                                    aria-label="Estilo da tatuagem"
+                                ></div>
+                            </fieldset>
+                            <fieldset>
+                                <legend><span>2</span>Tamanho e lugar</legend>
+                                <div class="size-row">
+                                    <input
+                                        type="range"
+                                        id="size"
+                                        min="3"
+                                        max="40"
+                                        value="10"
+                                        aria-label="Tamanho em centímetros"
+                                    />
+                                    <output id="sizeOut" for="size">10 cm</output>
+                                </div>
+                                <p class="hint" id="sizeHint"></p>
+                                <div
+                                    class="chips"
+                                    id="partChips"
+                                    role="group"
+                                    aria-label="Região do corpo"
+                                ></div>
+                            </fieldset>
+                            <fieldset>
+                                <legend><span>3</span>Data e hora</legend>
+                                <div class="cal">
+                                    <div class="cal-head">
+                                        <button
+                                            type="button"
+                                            class="icon-btn"
+                                            id="prevM"
+                                            aria-label="Mês anterior"
+                                        >
+                                            <svg
+                                                width="16"
+                                                height="16"
+                                                viewBox="0 0 20 20"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                stroke-width="2.4"
+                                                aria-hidden="true"
+                                            >
+                                                <path d="M13 3 6 10l7 7" />
+                                            </svg>
+                                        </button>
+                                        <b id="monthLabel"></b>
+                                        <button
+                                            type="button"
+                                            class="icon-btn"
+                                            id="nextM"
+                                            aria-label="Próximo mês"
+                                        >
+                                            <svg
+                                                width="16"
+                                                height="16"
+                                                viewBox="0 0 20 20"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                stroke-width="2.4"
+                                                aria-hidden="true"
+                                            >
+                                                <path d="m7 3 7 7-7 7" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <div class="cal-grid" id="calGrid"></div>
+                                    <div class="legend">
+                                        <span>Atendo de terça a sábado</span
+                                        ><span>● ponto vermelho: dia lotado</span>
+                                    </div>
+                                </div>
+                                <div
+                                    class="slots"
+                                    id="slots"
+                                    role="group"
+                                    aria-label="Horário"
+                                ></div>
+                            </fieldset>
+                            <fieldset style="border-bottom: 0">
+                                <legend><span>4</span>Seus dados</legend>
+                                <div class="two">
+                                    <div class="field">
+                                        <label class="mono" for="fName">Nome</label
+                                        ><input
+                                            id="fName"
+                                            autocomplete="name"
+                                            placeholder="Como posso te chamar?"
+                                        />
+                                    </div>
+                                    <div class="field">
+                                        <label class="mono" for="fPhone">WhatsApp</label
+                                        ><input
+                                            id="fPhone"
+                                            inputmode="tel"
+                                            autocomplete="tel"
+                                            placeholder="(00) 90000-0000"
+                                        />
+                                    </div>
+                                </div>
+                                <div class="field">
+                                    <label class="mono" for="fIdea">Sua ideia</label
+                                    ><textarea
+                                        id="fIdea"
+                                        placeholder="Conte o que quer tatuar, o significado e se tem referências."
+                                    ></textarea>
+                                </div>
+                            </fieldset>
+                        </div>
+
+                        <aside class="ticket" aria-live="polite">
+                            <h3>Ficha de agendamento</h3>
+                            <dl>
+                                <dt class="mono">Estilo</dt>
+                                <dd id="tStyle"></dd>
+                                <dt class="mono">Tamanho</dt>
+                                <dd id="tSize"></dd>
+                                <dt class="mono">Local</dt>
+                                <dd id="tPart"></dd>
+                                <dt class="mono">Sessão</dt>
+                                <dd id="tTime"></dd>
+                                <dt class="mono">Data</dt>
+                                <dd id="tDate"></dd>
+                                <dt class="mono">Nome</dt>
+                                <dd id="tName"></dd>
+                            </dl>
+                            <button class="btn" type="submit">Montar meu pedido</button>
+                            <p class="err" id="err" role="alert"></p>
+                            <div class="done" id="done">
+                                <p>
+                                    <strong>Pedido montado.</strong> Ele só chega à Duda depois que
+                                    você abrir o WhatsApp e enviar a mensagem.
+                                </p>
+                                <pre id="msg"></pre>
+                                <a id="wa" href="#" target="_blank" rel="noopener"
+                                    >Abrir WhatsApp</a
+                                >
+                            </div>
+                        </aside>
+                    </form>
+                </div>
+            </section>
+
+            <!-- ===== DÚVIDAS (FAQ) ===== -->
+            <section class="sec" id="duvidas" style="padding-top: 0">
+                <div class="wrap">
+                    <p class="eyebrow mono">Antes de vir</p>
+                    <h2 class="display">Dúvidas</h2>
+                    <div class="faq">
+                        <details>
+                            <summary>Preciso levar o desenho pronto?</summary>
+                            <p>
+                                Não. Você traz a ideia e as referências, e eu crio a arte. Mostro o
+                                desenho antes da sessão e ajustamos o que for preciso.
+                            </p>
+                        </details>
+                        <details>
+                            <summary>Como funciona o sinal?</summary>
+                            <p>
+                                Um valor de reserva garante o horário e é descontado do total da
+                                tatuagem. Se precisar remarcar, avise com antecedência e a reserva
+                                vale para a nova data. (texto de exemplo)
+                            </p>
+                        </details>
+                        <details>
+                            <summary>Dói muito?</summary>
+                            <p>
+                                Depende da região e de cada pessoa. Combinamos pausas e explico o
+                                que esperar de cada lugar do corpo antes de começar.
+                            </p>
+                        </details>
+                        <details>
+                            <summary>Qual a idade mínima?</summary>
+                            <p>
+                                A partir de 18 anos, com documento. Menores só com autorização e
+                                presença do responsável. (texto de exemplo)
+                            </p>
+                        </details>
+                        <details>
+                            <summary>Como cuido da tatuagem depois?</summary>
+                            <p>
+                                Você recebe as orientações por escrito: lavar, hidratar, evitar sol
+                                e piscina. Qualquer dúvida na cicatrização, é só mandar mensagem.
+                            </p>
+                        </details>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ===== CONTATO ===== -->
+            <section class="sec contact" id="contato">
+                <div class="wrap">
+                    <p class="eyebrow mono">Contato</p>
+                    <div class="contact-grid">
+                        <h2 class="display">Vamos<br />marcar<br />sua pele?</h2>
+                        <div class="clist">
+                            <div class="crow">
+                                <span class="mono">WhatsApp</span
+                                ><span id="phoneTxt">(00) 90000-0000</span
+                                ><button class="copy" type="button" data-copy="(00) 90000-0000">
+                                    Copiar
+                                </button>
+                            </div>
+                            <div class="crow">
+                                <span class="mono">Instagram</span
+                                ><span
+                                    ><a href="https://instagram.com/" target="_blank" rel="noopener"
+                                        >@dudaneves.tatto</a
+                                    ></span
+                                ><button class="copy" type="button" data-copy="@dudaneves.tatto">
+                                    Copiar
+                                </button>
+                            </div>
+                            <div class="crow">
+                                <span class="mono">Estúdio</span
+                                ><span>Rua do Exemplo, 123, sala 4<br />Bairro, Cidade</span
+                                ><button
+                                    class="copy"
+                                    type="button"
+                                    data-copy="Rua do Exemplo, 123, sala 4, Bairro, Cidade"
+                                >
+                                    Copiar
+                                </button>
+                            </div>
+                            <div class="crow">
+                                <span class="mono">Horários</span
+                                ><span>Ter a sáb · 10h às 19h<br />Somente com hora marcada</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- RODAPÉ -->
+        <footer>
+            <div class="wrap">
+                <div class="foot-big" aria-hidden="true">Duda Neves Tatto</div>
+                <div class="foot-row mono">
+                    <span>© 2026 Duda Neves Tatto</span><span>Todas as artes são autorais</span>
+                </div>
+            </div>
+        </footer>
+        <!-- CURSOR PERSONALIZADO -->
+        <div class="cur" id="cur"></div>
+
+        <!-- BIBLIOTECAS DE ANIMAÇÃO (as mesmas do site da Fanta) E O NOSSO SCRIPT -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+        <script src="script.js"></script>
+    </body>
+</html>
