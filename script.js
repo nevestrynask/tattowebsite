@@ -593,6 +593,13 @@
     }
 
     // ----------------------------------------------
+    // ANOS DE ESTRADA (atualiza sozinho a cada virada de ano)
+    // Para mudar o ano de início, troque só o número abaixo.
+    // ----------------------------------------------
+    var ANO_INICIO = 2022;
+    $("#anosEstrada").setAttribute("data-count", new Date().getFullYear() - ANO_INICIO);
+
+    // ----------------------------------------------
     // NÚMEROS SEM ANIMAÇÃO (quando não há GSAP)
     // ----------------------------------------------
     function finalCounts() {
@@ -821,32 +828,39 @@
     );
 
     // ----------------------------------------------
-    // PROCESSO: ROLAGEM HORIZONTAL FIXA (computador e celular)
-    // A seção fica parada na tela enquanto os passos andam para o lado.
+    // PROCESSO: ROLAGEM HORIZONTAL FIXA (só no computador)
+    // No computador a seção fica parada enquanto os passos andam para o lado.
+    // No celular não há animação aqui: a faixa é arrastada com o dedo (veja o CSS).
     // ----------------------------------------------
-    var pin = $("#procPin"),
-        track = $("#procTrack");
-    pin.style.overflow = "hidden";
-    // quanto a fila de cartões precisa andar para mostrar o último
-    var dist = function () {
-        return Math.max(0, track.scrollWidth - pin.clientWidth);
-    };
-    gsap.to(track, {
-        x: function () {
-            return -dist();
-        },
-        ease: "none",
-        scrollTrigger: {
-            trigger: "#processo",
-            start: "top 64px", // fixa logo abaixo da barra de navegação
-            end: function () {
-                return "+=" + dist();
+    var mm = gsap.matchMedia();
+    mm.add("(min-width: 861px)", function () {
+        var pin = $("#procPin"),
+            track = $("#procTrack");
+        pin.style.overflow = "hidden";
+        // quanto a fila de cartões precisa andar para mostrar o último
+        var dist = function () {
+            return Math.max(0, track.scrollWidth - pin.clientWidth);
+        };
+        gsap.to(track, {
+            x: function () {
+                return -dist();
             },
-            pin: true,
-            scrub: true,
-            anticipatePin: 1,
-            invalidateOnRefresh: true,
-        },
+            ease: "none",
+            scrollTrigger: {
+                trigger: "#processo",
+                start: "top 64px", // fixa logo abaixo da barra de navegação
+                end: function () {
+                    return "+=" + dist();
+                },
+                pin: true,
+                scrub: true,
+                anticipatePin: 1,
+                invalidateOnRefresh: true,
+            },
+        });
+        return function () {
+            pin.style.overflow = "";
+        };
     });
     window.addEventListener("load", function () {
         ScrollTrigger.refresh();
