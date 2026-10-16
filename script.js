@@ -125,8 +125,8 @@
 
         { 
             t: "Floral", 
-            s: "Fine Line e Botânico", 
-            y: "flower", 
+            s: "Fine Line", 
+            y: "Botânico", 
             z: "25 cm", 
             p: "Costela",
             foto: "assets/img6.jpg",
@@ -609,6 +609,8 @@
     // ANIMAÇÕES COM GSAP E SCROLLTRIGGER
     // ----------------------------------------------
     gsap.registerPlugin(ScrollTrigger);
+    // Evita pulos na rolagem do celular quando a barra do navegador some e aparece
+    ScrollTrigger.config({ ignoreMobileResize: true });
 
     gsap.from(".hero-name .ln", {
         yPercent: 115,
@@ -647,6 +649,21 @@
         delay: 0.6,
         stagger: 0.12,
         ease: "power3.out",
+    });
+
+    // ----------------------------------------------
+    // TÍTULO QUE SOME AOS POUCOS AO ROLAR
+    // ----------------------------------------------
+    gsap.to(".hero-name", {
+        opacity: 0, // vai ficando transparente
+        y: -60, // e sobe um pouco
+        ease: "none",
+        scrollTrigger: {
+            trigger: ".hero-name",
+            start: 0, // começa assim que a página rola
+            end: "bottom 15%", // termina quando o título quase saiu da tela
+            scrub: true, // o efeito acompanha o dedo / a roda do mouse
+        },
     });
 
     // ----------------------------------------------
@@ -804,44 +821,32 @@
     );
 
     // ----------------------------------------------
-    // PROCESSO: ROLAGEM HORIZONTAL FIXA NO COMPUTADOR
+    // PROCESSO: ROLAGEM HORIZONTAL FIXA (computador e celular)
+    // A seção fica parada na tela enquanto os passos andam para o lado.
     // ----------------------------------------------
-    var mm = gsap.matchMedia();
-    mm.add("(min-width: 861px)", function () {
-        var pin = $("#procPin"),
-            track = $("#procTrack");
-        pin.style.overflow = "hidden";
-        var dist = function () {
-            return Math.max(0, track.scrollWidth - pin.clientWidth);
-        };
-        gsap.to(track, {
-            x: function () {
-                return -dist();
+    var pin = $("#procPin"),
+        track = $("#procTrack");
+    pin.style.overflow = "hidden";
+    // quanto a fila de cartões precisa andar para mostrar o último
+    var dist = function () {
+        return Math.max(0, track.scrollWidth - pin.clientWidth);
+    };
+    gsap.to(track, {
+        x: function () {
+            return -dist();
+        },
+        ease: "none",
+        scrollTrigger: {
+            trigger: "#processo",
+            start: "top 64px", // fixa logo abaixo da barra de navegação
+            end: function () {
+                return "+=" + dist();
             },
-            ease: "none",
-            scrollTrigger: {
-                trigger: "#processo",
-                start: "top 64px",
-                end: function () {
-                    return "+=" + dist();
-                },
-                pin: true,
-                scrub: true,
-                invalidateOnRefresh: true,
-            },
-        });
-        return function () {
-            pin.style.overflow = "";
-        };
-    });
-    mm.add("(max-width: 860px)", function () {
-        gsap.from(".panel", {
-            y: 50,
-            opacity: 0,
-            stagger: 0.12,
-            duration: 0.7,
-            scrollTrigger: { trigger: "#procTrack", start: "top 85%" },
-        });
+            pin: true,
+            scrub: true,
+            anticipatePin: 1,
+            invalidateOnRefresh: true,
+        },
     });
     window.addEventListener("load", function () {
         ScrollTrigger.refresh();
