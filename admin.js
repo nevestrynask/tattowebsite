@@ -42,6 +42,16 @@
     }).join("") : '<p class="empty">Ainda não há pedidos recebidos.</p>';
     data.forEach((o) => { const select = $(`[data-order="${o.id}"]`); select.value = o.status; select.addEventListener("change", async () => { const { error } = await client.from("orders").update({ status: select.value }).eq("id", o.id); notice(error ? error.message : "Status do pedido atualizado.", !!error); }); });
   }
+  function setAvailabilityChoice(value) {
+    const form = $("#availabilityForm");
+    form.elements.is_available.value = value;
+    form.querySelectorAll("[data-availability-value]").forEach((button) => {
+      const selected = button.dataset.availabilityValue === value;
+      button.classList.toggle("selected", selected);
+      button.setAttribute("aria-pressed", String(selected));
+    });
+  }
+  $("#availabilityForm").querySelectorAll("[data-availability-value]").forEach((button) => button.addEventListener("click", () => setAvailabilityChoice(button.dataset.availabilityValue)));
   $("#availabilityForm").addEventListener("submit", async (e) => {
     e.preventDefault(); const form = e.currentTarget, fd = new FormData(form);
     const date = fd.get("date"), isAvailable = fd.get("is_available") === "true";
@@ -49,6 +59,7 @@
       const { error } = await client.from("availability").upsert({ date, is_available: isAvailable, updated_at: new Date().toISOString() });
       if (error) throw error;
       form.reset();
+      setAvailabilityChoice("false");
       await loadAvailability();
       notice(`Dia ${new Date(date + "T12:00:00").toLocaleDateString("pt-BR")} salvo como ${isAvailable ? "disponível" : "indisponível"}.`);
     }
@@ -57,8 +68,13 @@
   async function loadAvailability() {
     const { data, error } = await client.from("availability").select("date,is_available").order("date"); if (error) throw error;
     const future = data.filter((d) => d.date >= new Date().toISOString().slice(0, 10));
-    $("#availabilityList").innerHTML = future.length ? future.map((d) => `<div class="date-card"><span>${new Date(d.date + "T12:00:00").toLocaleDateString("pt-BR")} · ${d.is_available ? "Disponível" : "Indisponível"}</span><button class="secondary" data-date="${d.date}">Remover exceção</button></div>`).join("") : '<p class="empty">Sem exceções futuras cadastradas.</p>';
-    $("#availabilityList").querySelectorAll("[data-date]").forEach((b) => b.addEventListener("click", async () => { const { error } = await client.from("availability").delete().eq("date", b.dataset.date); if (error) notice(error.message, true); else { await loadAvailability(); notice("Exceção removida. O dia voltou a ficar disponível."); } }));
+    $("#availabilityList").innerHTML = future.length ? future.map((d) => `<article class="availability-card ${d.is_available ? "is-open" : "is-closed"}"><span class="availability-status-icon" aria-hidden="true">${d.is_available ? "♡" : "☾"}</span><div class="availability-card-copy"><strong>${new Date(d.date + "T12:00:00").toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" })}</strong><span>${d.is_available ? "Disponível para receber pedidos" : "Dia bloqueado para atendimento"}</span></div><button type="button" class="secondary" data-date="${d.date}">Voltar ao padrão</button></article>`).join("") : '<div class="availability-empty"><span aria-hidden="true">✧</span><p><strong>Nenhuma data especial por enquanto.</strong><br>Se bloquear algum dia, ele aparecerá aqui.</p></div>';
+    $("#availabilityList").querySelectorAll("[data-date]").forEach((button) => button.addEventListener("click", async () => {
+      button.disabled = true;
+      const { error } = await client.from("availability").delete().eq("date", button.dataset.date);
+      if (error) { button.disabled = false; notice(error.message, true); }
+      else { await loadAvailability(); notice("Data removida. Ela voltou à disponibilidade padrão: disponível."); }
+    }));
   }
   const workModal = $("#workModal"), workForm = $("#workForm"), workPreview = $("#workPreview");
   let workReturnFocus = null;
