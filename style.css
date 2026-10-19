@@ -404,11 +404,6 @@ h2.display {
     .hero-bg span:nth-child(n + 3) {
         display: none;
     }
-    .marquee {
-        position: relative;
-        z-index: 2;
-        margin-top: -14px;
-    }
 }
 
 /* Título à esquerda e foto da tatuadora à direita */
@@ -650,6 +645,14 @@ h2.display {
     /* um pouco maior que a tela, para a faixa inclinada não deixar cantos vazios */
     margin-inline: -2%;
     width: 104%;
+}
+
+@media (max-width: 560px) {
+    .marquee {
+        position: relative;
+        z-index: 2;
+        margin-top: -22px;
+    }
 }
 
 .marquee-track {
