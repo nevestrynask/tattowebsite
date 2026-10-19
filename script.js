@@ -524,7 +524,7 @@
             st.time +
             (idea ? "\n\nIdeia: " + idea : "");
         $("#msg").textContent = msg;
-        $("#wa").href = "https://wa.me/5500900000000?text=" + encodeURIComponent(msg);
+        $("#wa").href = "https://wa.me/5543988051250?text=" + encodeURIComponent(msg);
         done.classList.add("show");
         if (window.gsap && !reduce) gsap.from(done, { y: 16, opacity: 0, duration: 0.5 });
     });
@@ -655,6 +655,14 @@
         duration: 0.9,
         delay: 0.6,
         stagger: 0.12,
+        ease: "power3.out",
+    });
+    // Foto da tatuadora entra de baixo, logo depois do título
+    gsap.from(".hero-photo", {
+        y: 50,
+        opacity: 0,
+        duration: 1,
+        delay: 0.7,
         ease: "power3.out",
     });
 
