@@ -19,6 +19,35 @@
         db = window.supabase.createClient(window.DN_SUPABASE_URL, window.DN_SUPABASE_ANON_KEY);
     }
     function safe(v) { return String(v || "").replace(/[&<>"']/g, function (c) { return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]; }); }
+    var storyRevealTween = null;
+    function wrapStoryWords(node) {
+        Array.prototype.slice.call(node.childNodes).forEach(function (n) {
+            if (n.nodeType === 3) {
+                var fragment = document.createDocumentFragment();
+                n.textContent.split(/(\s+)/).forEach(function (part) {
+                    if (!part) return;
+                    if (!part.trim()) { fragment.appendChild(document.createTextNode(part)); return; }
+                    var span = document.createElement("span");
+                    span.className = "w";
+                    span.textContent = part;
+                    fragment.appendChild(span);
+                });
+                n.parentNode.replaceChild(fragment, n);
+            } else if (n.nodeType === 1) wrapStoryWords(n);
+        });
+    }
+    function animateStoryWords() {
+        if (!hasGsap) return;
+        if (storyRevealTween) {
+            if (storyRevealTween.scrollTrigger) storyRevealTween.scrollTrigger.kill();
+            storyRevealTween.kill();
+        }
+        storyRevealTween = gsap.fromTo("#storyText .w", { opacity: 0.16 }, {
+            opacity: 1, stagger: 0.12, ease: "none",
+            scrollTrigger: { trigger: "#storyText", start: "top 85%", end: "bottom 55%", scrub: true }
+        });
+        if (window.ScrollTrigger) ScrollTrigger.refresh();
+    }
     if (db) db.from("profile").select("display_name,bio,photo_url").eq("id", 1).maybeSingle().then(function (res) {
         if (res.error || !res.data) return;
         var p = res.data;
@@ -27,7 +56,10 @@
             $("#profileStamp").textContent = p.display_name;
             document.querySelectorAll(".profile-photo").forEach(function (img) { img.alt = p.display_name + ", tatuadora"; });
         }
-        if (p.bio) $("#storyText").textContent = p.bio;
+        if (p.bio) {
+            $("#storyText").textContent = p.bio;
+            if (hasGsap) { wrapStoryWords($("#storyText")); animateStoryWords(); }
+        }
         if (p.photo_url) document.querySelectorAll(".profile-photo").forEach(function (img) { img.src = p.photo_url; });
     });
 
@@ -708,42 +740,8 @@
     // ----------------------------------------------
     // HISTÓRIA: O TEXTO ACENDE PALAVRA POR PALAVRA
     // ----------------------------------------------
-    (function wrap(node) {
-        Array.prototype.slice.call(node.childNodes).forEach(function (n) {
-            if (n.nodeType === 3) {
-                var f = document.createDocumentFragment();
-                n.textContent.split(/(\s+)/).forEach(function (p) {
-                    if (!p) return;
-                    if (!p.trim()) {
-                        f.appendChild(document.createTextNode(" "));
-                        return;
-                    }
-                    var s = document.createElement("span");
-                    s.className = "w";
-                    s.textContent = p;
-                    f.appendChild(s);
-                });
-                n.parentNode.replaceChild(f, n);
-            } else if (n.nodeType === 1) {
-                wrap(n);
-            }
-        });
-    })($("#storyText"));
-    gsap.fromTo(
-        "#storyText .w",
-        { opacity: 0.16 },
-        {
-            opacity: 1,
-            stagger: 0.12,
-            ease: "none",
-            scrollTrigger: {
-                trigger: "#storyText",
-                start: "top 85%",
-                end: "bottom 55%",
-                scrub: true,
-            },
-        },
-    );
+    wrapStoryWords($("#storyText"));
+    animateStoryWords();
     gsap.fromTo(
         "#frame",
         { rotate: -5 },
