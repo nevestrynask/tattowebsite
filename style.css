@@ -352,16 +352,127 @@ h2.display {
     color: var(--muted);
 }
 
+/* Fundo com fotos das tatuagens desfocadas (só dentro do hero, ou seja,
+   acima da faixa com os estilos). Para mais ou menos blur, mude o valor
+   em "blur(14px)". Para mais ou menos visibilidade, mude o "opacity". */
+.hero-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    display: flex;
+    pointer-events: none;
+}
+
+.hero-bg span {
+    flex: 1 1 0;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.hero-bg img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    opacity: 0.55;
+    filter: blur(4px) saturate(0.85);
+    /* aumenta um pouco para as bordas borradas ficarem fora do quadro */
+    transform: scale(1.2);
+}
+
+/* Véu por cima das fotos: garante a leitura do texto e some no fim do
+   hero, para a transição até a faixa ficar suave. */
+.hero-bg::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--bg) 55%, transparent) 0%,
+        color-mix(in srgb, var(--bg) 40%, transparent) 60%,
+        var(--bg) 100%
+    );
+}
+
+@media (max-width: 900px) {
+    .hero-bg span:nth-child(n + 4) {
+        display: none;
+    }
+}
+
+@media (max-width: 560px) {
+    .hero-bg span:nth-child(n + 3) {
+        display: none;
+    }
+}
+
+/* Título à esquerda e foto da tatuadora à direita */
+.hero-main {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    align-items: center;
+    gap: clamp(20px, 4vw, 56px);
+    position: relative;
+}
+
 .hero-name {
-    font-size: clamp(5rem, 23vw, 21rem);
+    font-size: clamp(4.5rem, 15vw, 14rem);
     position: relative;
     z-index: 2;
+    /* o título ocupa só a largura do texto e fica colado na esquerda */
+    justify-self: start;
+    width: fit-content;
+    max-width: 100%;
+}
+
+.hero-photo {
+    position: relative;
+    z-index: 2;
+    justify-self: end;
+    width: min(100%, 380px);
+}
+
+.hero-photo-frame {
+    aspect-ratio: 4/5;
+    border: 2px solid var(--fg);
+    background: var(--bg2);
+    overflow: hidden;
+    transform: rotate(2.5deg);
+    box-shadow: 10px 10px 0 var(--red);
+}
+
+.hero-photo-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 30%;
+    display: block;
+}
+
+.hero-photo figcaption {
+    margin-top: 22px;
+    color: var(--muted);
+    text-align: right;
+}
+
+@media (max-width: 860px) {
+    .hero-main {
+        grid-template-columns: 1fr;
+        gap: 32px;
+    }
+    .hero-name {
+        font-size: clamp(4.5rem, 24vw, 9rem);
+    }
+    .hero-photo {
+        width: min(72%, 280px);
+    }
 }
 
 .hero-name .mask {
-    display: block;
+    display: flex;
     overflow: hidden;
     padding-top: 0.08em;
+    
     margin-top: -0.06em;
 }
 
@@ -371,7 +482,7 @@ h2.display {
 
 .hero-name .ln.r {
     color: var(--red);
-    padding-left: 0.55em;
+    padding-left: 0.25em;
 }
 
 .hero-name .tat {
@@ -491,7 +602,7 @@ h2.display {
     z-index: 1;
     right: max(0px, 2vw);
     top: -2%;
-    width: clamp(180px, 30vw, 420px);
+    width: clamp(150px, 22vw, 320px);
     color: var(--fg);
     pointer-events: none;
 }
