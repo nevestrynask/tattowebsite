@@ -274,9 +274,9 @@
         }
         if (window.ScrollTrigger) ScrollTrigger.refresh();
     });
-    if (db) db.from("portfolio").select("title,style,size,body_part,image_url").eq("is_published", true).order("sort_order").then(function (res) {
+    if (db) db.from("portfolio").select("title,style,size,body_part,image_url,description").eq("is_published", true).order("sort_order").then(function (res) {
         if (res.error || !res.data) return;
-        works = res.data.map(function (w) { return { t: w.title, s: w.style, y: "star", z: w.size, p: w.body_part, foto: w.image_url }; });
+        works = res.data.map(function (w) { return { t: w.title, s: w.style, y: "star", z: w.size, p: w.body_part, foto: w.image_url, description: w.description }; });
         var foundStyles = works.map(function (w) { return w.s; });
         styles = ["Todos"].concat(foundStyles.filter(function (s, i) { return foundStyles.indexOf(s) === i; }));
         filters.innerHTML = styles.map(function (s, i) { return '<button class="chip" type="button" aria-pressed="' + (i === 0) + '" data-f="' + safe(s) + '">' + safe(s) + '</button>'; }).join("");
@@ -298,8 +298,7 @@
         $("#lbArt").classList.toggle("tem-foto", !!w.foto);
         $("#lbStyle").textContent = w.s;
         $("#lbTitle").textContent = w.t;
-        $("#lbText").textContent =
-            "Aqui entram a foto real, a história da peça e o que a cliente pediu. Texto de exemplo.";
+        $("#lbText").textContent = w.description || "Uma tatuagem autoral feita pela Duda Neves.";
         $("#lbMeta").textContent = w.z + " · " + w.p;
         lb.classList.add("open");
         lb.setAttribute("aria-hidden", "false");

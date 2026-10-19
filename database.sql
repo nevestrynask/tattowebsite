@@ -23,6 +23,7 @@ create table if not exists public.portfolio (
     sort_order integer not null default 0,
     created_at timestamptz not null default now()
 );
+alter table public.portfolio add column if not exists description text not null default '';
 
 create table if not exists public.availability (
     date date primary key,

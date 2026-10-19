@@ -71,7 +71,7 @@
         const { error } = await client.storage.from("tattoo-portfolio").upload(path, file, { upsert: false }); if (error) throw error;
         imageUrl = client.storage.from("tattoo-portfolio").getPublicUrl(path).data.publicUrl;
       }
-      const row = { title: fd.get("title"), style: fd.get("style"), size: fd.get("size"), body_part: fd.get("body_part") };
+      const row = { title: fd.get("title"), style: fd.get("style"), size: fd.get("size"), body_part: fd.get("body_part"), description: fd.get("description") };
       if (imageUrl) row.image_url = imageUrl;
       const result = id ? await client.from("portfolio").update(row).eq("id", id) : await client.from("portfolio").insert({ ...row, image_url: imageUrl, sort_order: Math.floor(Date.now() / 1000) });
       if (result.error) throw result.error;
@@ -84,7 +84,7 @@
     const { data, error } = await client.from("portfolio").select("*").order("sort_order"); if (error) throw error;
     $("#worksList").innerHTML = data.length ? data.map((w) => `<article class="work-card"><img src="${esc(w.image_url)}" alt="${esc(w.title)}"><h3>${esc(w.title)}</h3><p>${esc(w.style)} · ${esc(w.size)} · ${esc(w.body_part)}</p><div class="work-actions"><button class="secondary" data-edit="${w.id}">Editar</button><button data-delete="${w.id}">Excluir</button></div></article>`).join("") : '<p class="empty">Adicione o primeiro trabalho; a galeria existente no site permanece visível até você publicar itens aqui.</p>';
     data.forEach((w) => {
-      $(`[data-edit="${w.id}"]`).addEventListener("click", () => { const f = $("#workForm"); ["id","title","style","size","body_part"].forEach((k) => { const key = k === "body_part" ? "body_part" : k; $(`[name="${key}"]`, f).value = k === "id" ? w.id : w[k]; }); $("[name=image]", f).required = false; $("#cancelEdit").hidden = false; $("button[type=submit]", f).textContent = "Salvar alterações"; f.scrollIntoView({ behavior: "smooth" }); });
+      $(`[data-edit="${w.id}"]`).addEventListener("click", () => { const f = $("#workForm"); ["id","title","style","size","body_part","description"].forEach((k) => { $(`[name="${k}"]`, f).value = k === "id" ? w.id : w[k] || ""; }); $("[name=image]", f).required = false; $("#cancelEdit").hidden = false; $("button[type=submit]", f).textContent = "Salvar alterações"; f.scrollIntoView({ behavior: "smooth" }); });
       $(`[data-delete="${w.id}"]`).addEventListener("click", async () => { if (!confirm(`Excluir “${w.title}” do portfólio?`)) return; const { error } = await client.from("portfolio").delete().eq("id", w.id); if (error) notice(error.message, true); else { await loadWorks(); notice("Trabalho removido do portfólio público."); } });
     });
   }
