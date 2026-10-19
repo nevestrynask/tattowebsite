@@ -67,9 +67,7 @@
         </svg>
 
         <!-- AVISO DE ESBOÇO (apague quando o site estiver pronto) -->
-        <div class="sketch-note mono">
-            Esboço · textos, números e desenhos são exemplos para substituir pelo material da Duda
-        </div>
+        
 
         <!-- BARRA DE NAVEGAÇÃO -->
         <header class="nav">
@@ -131,6 +129,15 @@
         <main>
             <!-- ===== ABERTURA (HERO) ===== -->
             <section class="hero" id="inicio">
+                <!-- FUNDO: FOTOS DAS TATUAGENS COM BLUR (só dentro do hero, acima da faixa).
+                     Para trocar uma foto, mude o src. Para tirar uma, apague o <span>. -->
+                <div class="hero-bg" aria-hidden="true">
+                    <span><img src="assets/img1.jpg" alt="" loading="eager" decoding="async" /></span>
+                    <span><img src="assets/img2.jpg" alt="" loading="eager" decoding="async" /></span>
+                    <span><img src="assets/img3.jpg" alt="" loading="eager" decoding="async" /></span>
+                    <span><img src="assets/img4.jpg" alt="" loading="eager" decoding="async" /></span>
+                    <span><img src="assets/img5.jpg" alt="" loading="eager" decoding="async" /></span>
+                </div>
                 <div class="float f1" data-speed="1.2">
                     <svg viewBox="0 0 100 100"><use href="#s-heart" /></svg>
                 </div>
@@ -165,11 +172,20 @@
                     <div class="hero-meta mono">
                         <span>Estúdio autoral</span><span>Agenda aberta · próximos meses</span>
                     </div>
-                    <h1 class="display hero-name" aria-label="Duda Neves Tatto">
-                        <span class="mask"><span class="ln">Duda</span></span>
-                        <span class="mask"><span class="ln r">Neves</span></span>
-                        <span class="tat" aria-hidden="true">tatto</span>
-                    </h1>
+                    <div class="hero-main">
+                        <h1 class="display hero-name" aria-label="Duda Neves Tatto">
+                            <span class="mask"><span class="ln">Duda</span></span>
+                            <span class="mask"><span class="ln r">Neves</span></span>
+                            <span class="tat" aria-hidden="true">tatto</span>
+                        </h1>
+                        <!-- FOTO DA TATUADORA (para trocar, edite o src) -->
+                        <figure class="hero-photo">
+                            <div class="hero-photo-frame">
+                                <img src="assets/duda.jpg" alt="Duda Neves, tatuadora" />
+                            </div>
+                            <figcaption class="mono">Duda Neves · tatuadora</figcaption>
+                        </figure>
+                    </div>
                     <div class="hero-bottom">
                         <div>
                             <p>
@@ -606,7 +622,7 @@
                         <div class="clist">
                             <div class="crow">
                                 <span class="mono">WhatsApp</span
-                                ><span id="phoneTxt">(00) 90000-0000</span
+                                ><span id="phoneTxt">(43) 98805-1250</span
                                 ><button class="copy" type="button" data-copy="(00) 90000-0000">
                                     Copiar
                                 </button>
@@ -623,18 +639,18 @@
                             </div>
                             <div class="crow">
                                 <span class="mono">Estúdio</span
-                                ><span>Rua do Exemplo, 123, sala 4<br />Bairro, Cidade</span
+                                ><span>Rua Coronel Batista <br />Centro, Cambará</span
                                 ><button
                                     class="copy"
                                     type="button"
-                                    data-copy="Rua do Exemplo, 123, sala 4, Bairro, Cidade"
+                                    data-copy="Rua Coronel Batista, Centro, Cambará"
                                 >
                                     Copiar
                                 </button>
                             </div>
                             <div class="crow">
                                 <span class="mono">Horários</span
-                                ><span>Ter a sáb · 10h às 19h<br />Somente com hora marcada</span>
+                                ><span>Somente com hora marcada<br /></span>
                             </div>
                         </div>
                     </div>
