@@ -644,6 +644,41 @@
             el.textContent = (+el.getAttribute("data-count")).toLocaleString("pt-BR");
         });
     }
+    // Navegação horizontal dos passos sem prender a rolagem vertical da página.
+    (function initProcessCarousel() {
+        var pin = $("#procPin"), track = $("#procTrack"), prev = $("#procPrev"), next = $("#procNext"), count = $("#procCount");
+        if (!pin || !track || !prev || !next || !count) return;
+        var cards = $$(".panel", track), active = 0, frame = 0;
+        function render(index) {
+            active = index;
+            count.textContent = String(active + 1).padStart(2, "0") + " / " + String(cards.length).padStart(2, "0");
+            prev.disabled = active === 0;
+            next.disabled = active === cards.length - 1;
+        }
+        function update() {
+            frame = 0;
+            var pinLeft = pin.getBoundingClientRect().left;
+            var closest = 0, distance = Infinity;
+            cards.forEach(function (card, index) {
+                var currentDistance = Math.abs(card.getBoundingClientRect().left - pinLeft);
+                if (currentDistance < distance) { distance = currentDistance; closest = index; }
+            });
+            render(closest);
+        }
+        function goTo(index) {
+            index = Math.max(0, Math.min(cards.length - 1, index));
+            var left = cards[index].getBoundingClientRect().left - pin.getBoundingClientRect().left + pin.scrollLeft;
+            pin.scrollTo({ left: left, behavior: reduce ? "auto" : "smooth" });
+            render(index);
+        }
+        prev.addEventListener("click", function () { goTo(active - 1); });
+        next.addEventListener("click", function () { goTo(active + 1); });
+        pin.addEventListener("scroll", function () {
+            if (!frame) frame = requestAnimationFrame(update);
+        }, { passive: true });
+        window.addEventListener("resize", update);
+        update();
+    })();
     if (!hasGsap) {
         finalCounts();
         return;
@@ -838,41 +873,6 @@
         },
     );
 
-    // ----------------------------------------------
-    // PROCESSO: ROLAGEM HORIZONTAL FIXA (só no computador)
-    // No computador a seção fica parada enquanto os passos andam para o lado.
-    // No celular não há animação aqui: a faixa é arrastada com o dedo (veja o CSS).
-    // ----------------------------------------------
-    var mm = gsap.matchMedia();
-    mm.add("(min-width: 861px)", function () {
-        var pin = $("#procPin"),
-            track = $("#procTrack");
-        pin.style.overflow = "hidden";
-        // quanto a fila de cartões precisa andar para mostrar o último
-        var dist = function () {
-            return Math.max(0, track.scrollWidth - pin.clientWidth);
-        };
-        gsap.to(track, {
-            x: function () {
-                return -dist();
-            },
-            ease: "none",
-            scrollTrigger: {
-                trigger: "#processo",
-                start: "top 64px", // fixa logo abaixo da barra de navegação
-                end: function () {
-                    return "+=" + dist();
-                },
-                pin: true,
-                scrub: true,
-                anticipatePin: 1,
-                invalidateOnRefresh: true,
-            },
-        });
-        return function () {
-            pin.style.overflow = "";
-        };
-    });
     window.addEventListener("load", function () {
         ScrollTrigger.refresh();
     });

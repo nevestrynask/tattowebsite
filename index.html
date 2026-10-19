@@ -403,7 +403,12 @@
                             </article>
                         </div>
                     </div>
-                    <p class="proc-hint mono" aria-hidden="true">Deslize para o lado</p>
+                    <div class="proc-controls" aria-label="Controles dos passos">
+                        <span class="proc-hint mono">Arraste ou use as setas</span>
+                        <span class="proc-count mono" id="procCount" aria-live="polite">01 / 04</span>
+                        <button class="proc-arrow" id="procPrev" type="button" aria-label="Ver passo anterior" disabled>←</button>
+                        <button class="proc-arrow" id="procNext" type="button" aria-label="Ver próximo passo">→</button>
+                    </div>
                 </div>
             </section>
 
