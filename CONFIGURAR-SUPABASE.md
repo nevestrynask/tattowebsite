@@ -7,6 +7,18 @@ O site e o painel usam o Supabase (banco PostgreSQL, autenticação e armazename
 1. Crie um projeto em [supabase.com](https://supabase.com/) e guarde a senha do banco.
 2. No painel do projeto, abra **SQL Editor**, cole todo o conteúdo de `database.sql` e execute. Isso cria as tabelas, permissões, bucket de imagens e importa as oito peças que já aparecem na galeria.
    Se o banco já estava configurado, rode as migrações necessárias no SQL Editor. Para adicionar a descrição às tatuagens existentes: `alter table public.portfolio add column if not exists description text not null default '';`. Para salvar fotos diferentes na abertura e na apresentação: `alter table public.profile add column if not exists hero_photo_url text not null default ''; alter table public.profile add column if not exists story_photo_url text not null default '';`.
+
+   Para receber imagens de referência nos pedidos antigos, rode esta migração no SQL Editor (o `database.sql` atualizado já contém essas alterações para projetos novos):
+   ```sql
+   alter table public.orders add column if not exists reference_image_url text not null default '';
+   insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+   values ('tattoo-references', 'tattoo-references', true, 8388608, array['image/jpeg','image/png','image/webp'])
+   on conflict (id) do nothing;
+   drop policy if exists "reference images are public" on storage.objects;
+   create policy "reference images are public" on storage.objects for select to anon, authenticated using (bucket_id = 'tattoo-references');
+   drop policy if exists "visitors upload reference images" on storage.objects;
+   create policy "visitors upload reference images" on storage.objects for insert to anon, authenticated with check (bucket_id = 'tattoo-references' and (storage.foldername(name))[1] = 'references');
+   ```
 3. Em **Project Settings → API**, copie a **Project URL** e a chave **publishable** (em projetos antigos, a chave `anon` pública).
 4. Preencha `supabase-config.js` com esses dois valores. A chave publicável é própria para o navegador; não use `service_role`.
 
