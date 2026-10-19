@@ -64,9 +64,13 @@
   let workReturnFocus = null;
   const defaultWorkDescription = "Uma tatuagem autoral feita pela Duda Neves.";
   const cropModal = $("#cropModal"), cropStage = $("#cropStage"), cropImage = $("#cropImage"), cropZoom = $("#cropZoom"), cropAspect = $("#cropAspect");
-  const profilePreview = $("#profilePreview");
+  const profilePreviews = { heroPhoto: $("#heroPhotoPreview"), storyPhoto: $("#storyPhotoPreview") };
+  const profileInputs = { heroPhoto: $("#profileForm").elements.hero_photo, storyPhoto: $("#profileForm").elements.story_photo };
+  const profilePreviewUrls = { heroPhoto: "", storyPhoto: "" };
+  let profileState = null;
   let cropSource = null, cropSourceFile = null, cropSourceUrl = "", cropContext = "", cropState = null;
-  let pendingWorkFile = null, pendingProfileFile = null, workPreviewUrl = "", profilePreviewUrl = "";
+  let pendingWorkFile = null, pendingProfileFiles = { heroPhoto: null, storyPhoto: null }, workPreviewUrl = "";
+  const isProfilePhoto = (context) => context === "heroPhoto" || context === "storyPhoto";
   function clampCrop() {
     const width = cropStage.clientWidth, height = cropStage.clientHeight;
     cropState.x = Math.min(0, Math.max(width - cropState.imageWidth, cropState.x));
@@ -81,7 +85,7 @@
     cropImage.style.top = `${cropState.y}px`;
   }
   function initializeCrop() {
-    const ratio = cropAspect.value === "square" ? 1 : cropAspect.value === "portrait" ? (cropContext === "profile" ? 4 / 5 : 3 / 4) : cropSource.naturalWidth / cropSource.naturalHeight;
+    const ratio = cropAspect.value === "square" ? 1 : cropAspect.value === "portrait" ? (isProfilePhoto(cropContext) ? 4 / 5 : 3 / 4) : cropSource.naturalWidth / cropSource.naturalHeight;
     const maxWidth = Math.min(440, cropModal.querySelector(".crop-modal-card").clientWidth - 48);
     const maxHeight = Math.min(440, window.innerHeight * 0.45);
     let width = maxWidth, height = width / ratio;
@@ -103,7 +107,7 @@
     cropSourceFile = file;
     cropState = null;
     cropAspect.value = "original";
-    cropAspect.options[1].textContent = context === "profile" ? "Retrato (4:5)" : "Retrato (3:4)";
+    cropAspect.options[1].textContent = isProfilePhoto(context) ? "Retrato (4:5)" : "Retrato (3:4)";
     cropSourceUrl = URL.createObjectURL(file);
     cropSource = new Image();
     cropSource.onload = () => {
@@ -124,7 +128,7 @@
     cropSourceUrl = ""; cropSource = null; cropSourceFile = null; cropState = null;
     if (cancelled) {
       if (cropContext === "work") workForm.elements.image.value = "";
-      if (cropContext === "profile") $("#profileForm").elements.photo.value = "";
+      if (isProfilePhoto(cropContext)) profileInputs[cropContext].value = "";
     }
   }
   $("#cancelCrop").addEventListener("click", () => closeCrop(true));
@@ -168,9 +172,9 @@
         if (workPreviewUrl) URL.revokeObjectURL(workPreviewUrl);
         workPreviewUrl = previewUrl; workPreview.src = previewUrl; workPreview.hidden = false;
       } else {
-        pendingProfileFile = original;
-        if (profilePreviewUrl) URL.revokeObjectURL(profilePreviewUrl);
-        profilePreviewUrl = previewUrl; profilePreview.src = previewUrl;
+        pendingProfileFiles[cropContext] = original;
+        if (profilePreviewUrls[cropContext]) URL.revokeObjectURL(profilePreviewUrls[cropContext]);
+        profilePreviewUrls[cropContext] = previewUrl; profilePreviews[cropContext].src = previewUrl;
       }
       closeCrop(false);
       return;
@@ -193,9 +197,9 @@
         if (workPreviewUrl) URL.revokeObjectURL(workPreviewUrl);
         workPreviewUrl = previewUrl; workPreview.src = previewUrl; workPreview.hidden = false;
       } else {
-        pendingProfileFile = cropped;
-        if (profilePreviewUrl) URL.revokeObjectURL(profilePreviewUrl);
-        profilePreviewUrl = previewUrl; profilePreview.src = previewUrl;
+        pendingProfileFiles[cropContext] = cropped;
+        if (profilePreviewUrls[cropContext]) URL.revokeObjectURL(profilePreviewUrls[cropContext]);
+        profilePreviewUrls[cropContext] = previewUrl; profilePreviews[cropContext].src = previewUrl;
       }
       closeCrop(false);
     }, cropSourceFile.type, 0.95);
@@ -238,7 +242,7 @@
     if (!file) return;
     openCrop(file, "work");
   });
-  $("#profileForm").elements.photo.addEventListener("change", (e) => { const file = e.currentTarget.files[0]; if (file) openCrop(file, "profile"); });
+  Object.entries(profileInputs).forEach(([context, input]) => input.addEventListener("change", (e) => { const file = e.currentTarget.files[0]; if (file) openCrop(file, context); }));
   $("#workForm").addEventListener("submit", async (e) => {
     e.preventDefault(); const form = e.currentTarget, fd = new FormData(form), id = fd.get("id"), file = fd.get("image");
     const button = $("#saveWork"); button.disabled = true;
@@ -275,20 +279,32 @@
     data.forEach((w) => $(`[data-edit="${w.id}"]`).addEventListener("click", () => openWorkModal(w)));
   }
   $("#profileForm").addEventListener("submit", async (e) => {
-    e.preventDefault(); const form = e.currentTarget, fd = new FormData(form); let photoUrl;
+    e.preventDefault(); const form = e.currentTarget, fd = new FormData(form);
     try {
-      const file = pendingProfileFile || fd.get("photo");
-      if (file && file.size) { if (file.size > 8 * 1024 * 1024) throw new Error("A imagem precisa ter até 8 MB."); const path = `profile/${crypto.randomUUID()}-${file.name.replace(/[^\w.-]/g, "-")}`; const { error } = await client.storage.from("tattoo-portfolio").upload(path, file); if (error) throw error; photoUrl = client.storage.from("tattoo-portfolio").getPublicUrl(path).data.publicUrl; }
-      const row = { id: 1, display_name: fd.get("display_name"), bio: fd.get("bio"), updated_at: new Date().toISOString() }; if (photoUrl) row.photo_url = photoUrl;
+      const photoUrls = {};
+      for (const [context, input] of Object.entries(profileInputs)) {
+        const file = pendingProfileFiles[context] || fd.get(input.name);
+        if (file && file.size) {
+          if (file.size > 8 * 1024 * 1024) throw new Error("Cada imagem precisa ter até 8 MB.");
+          const path = `profile/${context}-${crypto.randomUUID()}-${file.name.replace(/[^\w.-]/g, "-")}`;
+          const { error } = await client.storage.from("tattoo-portfolio").upload(path, file);
+          if (error) throw error;
+          photoUrls[context] = client.storage.from("tattoo-portfolio").getPublicUrl(path).data.publicUrl;
+        }
+      }
+      const row = { id: 1, display_name: fd.get("display_name"), bio: fd.get("bio"), hero_photo_url: photoUrls.heroPhoto || profileState?.hero_photo_url || profileState?.photo_url || "", story_photo_url: photoUrls.storyPhoto || profileState?.story_photo_url || profileState?.photo_url || "", updated_at: new Date().toISOString() };
       const { error } = await client.from("profile").upsert(row); if (error) throw error;
-      if (photoUrl) profilePreview.src = photoUrl;
-      pendingProfileFile = null;
-      if (profilePreviewUrl) { URL.revokeObjectURL(profilePreviewUrl); profilePreviewUrl = ""; }
-      form.elements.photo.value = "";
+      profileState = { ...profileState, ...row };
+      Object.entries(profilePreviews).forEach(([context, preview]) => {
+        if (photoUrls[context]) preview.src = photoUrls[context];
+        pendingProfileFiles[context] = null;
+        if (profilePreviewUrls[context]) { URL.revokeObjectURL(profilePreviewUrls[context]); profilePreviewUrls[context] = ""; }
+        profileInputs[context].value = "";
+      });
       notice("Perfil atualizado.");
     } catch (error) { notice(error.message, true); }
   });
-  async function loadProfile() { const { data, error } = await client.from("profile").select("*").eq("id", 1).single(); if (error) throw error; const f = $("#profileForm"); f.elements.display_name.value = data.display_name; f.elements.bio.value = data.bio; profilePreview.src = data.photo_url || "assets/duda.jpg"; }
+  async function loadProfile() { const { data, error } = await client.from("profile").select("*").eq("id", 1).single(); if (error) throw error; profileState = data; const f = $("#profileForm"); f.elements.display_name.value = data.display_name; f.elements.bio.value = data.bio; profilePreviews.heroPhoto.src = data.hero_photo_url || data.photo_url || "assets/duda.jpg"; profilePreviews.storyPhoto.src = data.story_photo_url || data.photo_url || "assets/duda.jpg"; }
   client?.auth.onAuthStateChange((_event, session) => { if (!session) { dashboard.hidden = true; loginView.hidden = false; } });
   adminSession().catch((error) => msg("#loginMessage", error.message));
 })();

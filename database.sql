@@ -39,6 +39,8 @@ create table if not exists public.profile (
     updated_at timestamptz not null default now()
 );
 insert into public.profile (id) values (1) on conflict (id) do nothing;
+alter table public.profile add column if not exists hero_photo_url text not null default '';
+alter table public.profile add column if not exists story_photo_url text not null default '';
 
 insert into public.portfolio (title, style, size, body_part, image_url, sort_order)
 select v.title, v.style, v.size, v.body_part, v.image_url, v.sort_order

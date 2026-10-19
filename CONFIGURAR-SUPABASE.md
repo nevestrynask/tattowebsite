@@ -6,6 +6,7 @@ O site e o painel usam o Supabase (banco PostgreSQL, autenticação e armazename
 
 1. Crie um projeto em [supabase.com](https://supabase.com/) e guarde a senha do banco.
 2. No painel do projeto, abra **SQL Editor**, cole todo o conteúdo de `database.sql` e execute. Isso cria as tabelas, permissões, bucket de imagens e importa as oito peças que já aparecem na galeria.
+   Se o banco já estava configurado, rode as migrações necessárias no SQL Editor. Para adicionar a descrição às tatuagens existentes: `alter table public.portfolio add column if not exists description text not null default '';`. Para salvar fotos diferentes na abertura e na apresentação: `alter table public.profile add column if not exists hero_photo_url text not null default ''; alter table public.profile add column if not exists story_photo_url text not null default '';`.
 3. Em **Project Settings → API**, copie a **Project URL** e a chave **publishable** (em projetos antigos, a chave `anon` pública).
 4. Preencha `supabase-config.js` com esses dois valores. A chave publicável é própria para o navegador; não use `service_role`.
 
@@ -24,5 +25,5 @@ Envie os arquivos do site para o repositório/hospedagem, incluindo `admin.html`
 
 ### Regras da agenda
 
-Por padrão, terça a sábado aparecem disponíveis e domingo/segunda aparecem fechados. Uma data salva no painel substitui essa regra só para aquele dia; **Remover exceção** restaura o padrão. A data escolhida pelo cliente continua sendo uma preferência, nunca uma confirmação de horário.
+Por padrão, todos os dias a partir de hoje aparecem disponíveis. Uma data marcada como indisponível no painel fecha apenas aquele dia; **Remover exceção** restaura a disponibilidade padrão. A data escolhida pelo cliente continua sendo uma preferência, nunca uma confirmação de horário.
 

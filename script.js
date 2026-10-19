@@ -48,7 +48,7 @@
         });
         if (window.ScrollTrigger) ScrollTrigger.refresh();
     }
-    if (db) db.from("profile").select("display_name,bio,photo_url").eq("id", 1).maybeSingle().then(function (res) {
+    if (db) db.from("profile").select("display_name,bio,photo_url,hero_photo_url,story_photo_url").eq("id", 1).maybeSingle().then(function (res) {
         if (res.error || !res.data) return;
         var p = res.data;
         if (p.display_name) {
@@ -60,7 +60,10 @@
             $("#storyText").textContent = p.bio;
             if (hasGsap) { wrapStoryWords($("#storyText")); animateStoryWords(); }
         }
-        if (p.photo_url) document.querySelectorAll(".profile-photo").forEach(function (img) { img.src = p.photo_url; });
+        var heroPhoto = document.getElementById("heroPhoto");
+        var storyPhoto = document.getElementById("storyPhoto");
+        if (heroPhoto && (p.hero_photo_url || p.photo_url)) heroPhoto.src = p.hero_photo_url || p.photo_url;
+        if (storyPhoto && (p.story_photo_url || p.photo_url)) storyPhoto.src = p.story_photo_url || p.photo_url;
     });
 
     // ----------------------------------------------
