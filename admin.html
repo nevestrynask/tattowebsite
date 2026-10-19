@@ -37,7 +37,7 @@
       <div class="modal-head"><div><p class="eyebrow">Ajustar imagem</p><h2 id="cropTitle">Posicione sua foto</h2></div><button type="button" id="cancelCrop" class="modal-close secondary" aria-label="Cancelar recorte">×</button></div>
       <p class="crop-help">Arraste a imagem para ajustar o enquadramento e use o controle para aproximar ou afastar.</p>
       <div id="cropStage" class="crop-stage"><img id="cropImage" alt="Imagem para recortar"></div>
-      <label class="zoom-label">Zoom<input id="cropZoom" type="range" min="1" max="4" step="0.01" value="1"></label>
+      <div class="crop-controls"><label>Enquadramento<select id="cropAspect"><option value="original">Proporção original</option><option value="portrait">Retrato</option><option value="square">Quadrado</option></select></label><label class="zoom-label">Zoom<input id="cropZoom" type="range" min="1" max="4" step="0.01" value="1"></label></div>
       <div class="modal-actions"><span class="action-spacer"></span><button type="button" id="cancelCropBottom" class="secondary">Cancelar</button><button type="button" id="applyCrop">Usar esta imagem</button></div>
     </div>
   </div>

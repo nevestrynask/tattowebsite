@@ -63,9 +63,9 @@
   const workModal = $("#workModal"), workForm = $("#workForm"), workPreview = $("#workPreview");
   let workReturnFocus = null;
   const defaultWorkDescription = "Uma tatuagem autoral feita pela Duda Neves.";
-  const cropModal = $("#cropModal"), cropStage = $("#cropStage"), cropImage = $("#cropImage"), cropZoom = $("#cropZoom");
+  const cropModal = $("#cropModal"), cropStage = $("#cropStage"), cropImage = $("#cropImage"), cropZoom = $("#cropZoom"), cropAspect = $("#cropAspect");
   const profilePreview = $("#profilePreview");
-  let cropSource = null, cropSourceUrl = "", cropContext = "", cropState = null;
+  let cropSource = null, cropSourceFile = null, cropSourceUrl = "", cropContext = "", cropState = null;
   let pendingWorkFile = null, pendingProfileFile = null, workPreviewUrl = "", profilePreviewUrl = "";
   function clampCrop() {
     const width = cropStage.clientWidth, height = cropStage.clientHeight;
@@ -81,10 +81,17 @@
     cropImage.style.top = `${cropState.y}px`;
   }
   function initializeCrop() {
-    const width = cropStage.clientWidth, height = cropStage.clientHeight;
+    const ratio = cropAspect.value === "square" ? 1 : cropAspect.value === "portrait" ? (cropContext === "profile" ? 4 / 5 : 3 / 4) : cropSource.naturalWidth / cropSource.naturalHeight;
+    const maxWidth = Math.min(440, cropModal.querySelector(".crop-modal-card").clientWidth - 48);
+    const maxHeight = Math.min(440, window.innerHeight * 0.45);
+    let width = maxWidth, height = width / ratio;
+    if (height > maxHeight) { height = maxHeight; width = height * ratio; }
+    cropStage.style.width = `${width}px`;
+    cropStage.style.height = `${height}px`;
+    cropStage.style.aspectRatio = "auto";
     const fit = Math.max(width / cropSource.naturalWidth, height / cropSource.naturalHeight);
     cropZoom.value = "1";
-    cropState = { fit, zoom: 1, width, height, imageWidth: cropSource.naturalWidth * fit, imageHeight: cropSource.naturalHeight * fit };
+    cropState = { fit, zoom: 1, width, height, imageWidth: cropSource.naturalWidth * fit, imageHeight: cropSource.naturalHeight * fit, changed: false };
     cropState.x = (width - cropState.imageWidth) / 2;
     cropState.y = (height - cropState.imageHeight) / 2;
     drawCropPosition();
@@ -93,8 +100,10 @@
     if (!file || !file.type.startsWith("image/")) return;
     if (file.size > 20 * 1024 * 1024) { notice("A imagem precisa ter até 20 MB para abrir o recorte.", true); return; }
     cropContext = context;
+    cropSourceFile = file;
     cropState = null;
-    cropStage.classList.toggle("square", context === "profile");
+    cropAspect.value = "original";
+    cropAspect.options[1].textContent = context === "profile" ? "Retrato (4:5)" : "Retrato (3:4)";
     cropSourceUrl = URL.createObjectURL(file);
     cropSource = new Image();
     cropSource.onload = () => {
@@ -112,7 +121,7 @@
     cropModal.setAttribute("aria-hidden", "true");
     if (!workModal.classList.contains("open")) document.body.classList.remove("modal-open");
     if (cropSourceUrl) URL.revokeObjectURL(cropSourceUrl);
-    cropSourceUrl = ""; cropSource = null; cropState = null;
+    cropSourceUrl = ""; cropSource = null; cropSourceFile = null; cropState = null;
     if (cancelled) {
       if (cropContext === "work") workForm.elements.image.value = "";
       if (cropContext === "profile") $("#profileForm").elements.photo.value = "";
@@ -129,9 +138,11 @@
   });
   cropStage.addEventListener("pointermove", (e) => {
     if (!cropState?.drag || cropState.drag.pointerId !== e.pointerId) return;
+    const oldX = cropState.x, oldY = cropState.y;
     cropState.x = cropState.drag.imageX + e.clientX - cropState.drag.x;
     cropState.y = cropState.drag.imageY + e.clientY - cropState.drag.y;
     drawCropPosition();
+    if (cropState.x !== oldX || cropState.y !== oldY) cropState.changed = true;
   });
   ["pointerup", "pointercancel"].forEach((name) => cropStage.addEventListener(name, () => { if (cropState) cropState.drag = null; }));
   cropZoom.addEventListener("input", () => {
@@ -139,25 +150,43 @@
     const centerX = (cropState.width / 2 - cropState.x) / cropState.imageWidth;
     const centerY = (cropState.height / 2 - cropState.y) / cropState.imageHeight;
     cropState.zoom = Number(cropZoom.value);
+    if (cropState.zoom !== 1) cropState.changed = true;
     cropState.imageWidth = cropSource.naturalWidth * cropState.fit * cropState.zoom;
     cropState.imageHeight = cropSource.naturalHeight * cropState.fit * cropState.zoom;
     cropState.x = cropState.width / 2 - centerX * cropState.imageWidth;
     cropState.y = cropState.height / 2 - centerY * cropState.imageHeight;
     drawCropPosition();
   });
+  cropAspect.addEventListener("change", () => { if (cropSource) { initializeCrop(); cropState.changed = cropAspect.value !== "original"; } });
   $("#applyCrop").addEventListener("click", () => {
     if (!cropState || !cropSource) return;
+    if (!cropState.changed) {
+      const original = cropSourceFile;
+      const previewUrl = URL.createObjectURL(original);
+      if (cropContext === "work") {
+        pendingWorkFile = original;
+        if (workPreviewUrl) URL.revokeObjectURL(workPreviewUrl);
+        workPreviewUrl = previewUrl; workPreview.src = previewUrl; workPreview.hidden = false;
+      } else {
+        pendingProfileFile = original;
+        if (profilePreviewUrl) URL.revokeObjectURL(profilePreviewUrl);
+        profilePreviewUrl = previewUrl; profilePreview.src = previewUrl;
+      }
+      closeCrop(false);
+      return;
+    }
     const canvas = document.createElement("canvas");
-    canvas.width = cropContext === "profile" ? 1200 : 1200;
-    canvas.height = cropContext === "profile" ? 1500 : 1600;
     const sourceX = -cropState.x / (cropState.fit * cropState.zoom);
     const sourceY = -cropState.y / (cropState.fit * cropState.zoom);
     const sourceWidth = cropState.width / (cropState.fit * cropState.zoom);
     const sourceHeight = cropState.height / (cropState.fit * cropState.zoom);
+    canvas.width = Math.max(1, Math.round(sourceWidth));
+    canvas.height = Math.max(1, Math.round(sourceHeight));
     canvas.getContext("2d").drawImage(cropSource, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, canvas.width, canvas.height);
     canvas.toBlob((blob) => {
       if (!blob) { notice("Não foi possível preparar a imagem recortada.", true); return; }
-      const cropped = new File([blob], `${cropContext}-recortada.jpg`, { type: "image/jpeg" });
+      const extension = blob.type === "image/png" ? "png" : blob.type === "image/webp" ? "webp" : "jpg";
+      const cropped = new File([blob], `${cropContext}-recortada.${extension}`, { type: blob.type });
       const previewUrl = URL.createObjectURL(blob);
       if (cropContext === "work") {
         pendingWorkFile = cropped;
@@ -169,7 +198,7 @@
         profilePreviewUrl = previewUrl; profilePreview.src = previewUrl;
       }
       closeCrop(false);
-    }, "image/jpeg", 0.9);
+    }, cropSourceFile.type, 0.95);
   });
   function openWorkModal(work) {
     workForm.reset();
