@@ -43,15 +43,22 @@
     data.forEach((o) => { const select = $(`[data-order="${o.id}"]`); select.value = o.status; select.addEventListener("change", async () => { const { error } = await client.from("orders").update({ status: select.value }).eq("id", o.id); notice(error ? error.message : "Status do pedido atualizado.", !!error); }); });
   }
   $("#availabilityForm").addEventListener("submit", async (e) => {
-    e.preventDefault(); const fd = new FormData(e.currentTarget);
-    try { const { error } = await client.from("availability").upsert({ date: fd.get("date"), is_available: fd.get("is_available") === "true", updated_at: new Date().toISOString() }); if (error) throw error; e.currentTarget.reset(); await loadAvailability(); notice("Disponibilidade salva e publicada no calendário."); }
+    e.preventDefault(); const form = e.currentTarget, fd = new FormData(form);
+    const date = fd.get("date"), isAvailable = fd.get("is_available") === "true";
+    try {
+      const { error } = await client.from("availability").upsert({ date, is_available: isAvailable, updated_at: new Date().toISOString() });
+      if (error) throw error;
+      form.reset();
+      await loadAvailability();
+      notice(`Dia ${new Date(date + "T12:00:00").toLocaleDateString("pt-BR")} salvo como ${isAvailable ? "disponível" : "indisponível"}.`);
+    }
     catch (error) { notice(error.message, true); }
   });
   async function loadAvailability() {
     const { data, error } = await client.from("availability").select("date,is_available").order("date"); if (error) throw error;
     const future = data.filter((d) => d.date >= new Date().toISOString().slice(0, 10));
     $("#availabilityList").innerHTML = future.length ? future.map((d) => `<div class="date-card"><span>${new Date(d.date + "T12:00:00").toLocaleDateString("pt-BR")} · ${d.is_available ? "Disponível" : "Indisponível"}</span><button class="secondary" data-date="${d.date}">Remover exceção</button></div>`).join("") : '<p class="empty">Sem exceções futuras cadastradas.</p>';
-    $("#availabilityList").querySelectorAll("[data-date]").forEach((b) => b.addEventListener("click", async () => { const { error } = await client.from("availability").delete().eq("date", b.dataset.date); if (error) notice(error.message, true); else { await loadAvailability(); notice("Exceção removida. O dia voltou à regra padrão de terça a sábado."); } }));
+    $("#availabilityList").querySelectorAll("[data-date]").forEach((b) => b.addEventListener("click", async () => { const { error } = await client.from("availability").delete().eq("date", b.dataset.date); if (error) notice(error.message, true); else { await loadAvailability(); notice("Exceção removida. O dia voltou a ficar disponível."); } }));
   }
   $("#workForm").addEventListener("submit", async (e) => {
     e.preventDefault(); const form = e.currentTarget, fd = new FormData(form), id = fd.get("id"), file = fd.get("image");
