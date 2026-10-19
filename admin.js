@@ -63,8 +63,118 @@
   const workModal = $("#workModal"), workForm = $("#workForm"), workPreview = $("#workPreview");
   let workReturnFocus = null;
   const defaultWorkDescription = "Uma tatuagem autoral feita pela Duda Neves.";
+  const cropModal = $("#cropModal"), cropStage = $("#cropStage"), cropImage = $("#cropImage"), cropZoom = $("#cropZoom");
+  const profilePreview = $("#profilePreview");
+  let cropSource = null, cropSourceUrl = "", cropContext = "", cropState = null;
+  let pendingWorkFile = null, pendingProfileFile = null, workPreviewUrl = "", profilePreviewUrl = "";
+  function clampCrop() {
+    const width = cropStage.clientWidth, height = cropStage.clientHeight;
+    cropState.x = Math.min(0, Math.max(width - cropState.imageWidth, cropState.x));
+    cropState.y = Math.min(0, Math.max(height - cropState.imageHeight, cropState.y));
+  }
+  function drawCropPosition() {
+    if (!cropState) return;
+    clampCrop();
+    cropImage.style.width = `${cropState.imageWidth}px`;
+    cropImage.style.height = `${cropState.imageHeight}px`;
+    cropImage.style.left = `${cropState.x}px`;
+    cropImage.style.top = `${cropState.y}px`;
+  }
+  function initializeCrop() {
+    const width = cropStage.clientWidth, height = cropStage.clientHeight;
+    const fit = Math.max(width / cropSource.naturalWidth, height / cropSource.naturalHeight);
+    cropZoom.value = "1";
+    cropState = { fit, zoom: 1, width, height, imageWidth: cropSource.naturalWidth * fit, imageHeight: cropSource.naturalHeight * fit };
+    cropState.x = (width - cropState.imageWidth) / 2;
+    cropState.y = (height - cropState.imageHeight) / 2;
+    drawCropPosition();
+  }
+  function openCrop(file, context) {
+    if (!file || !file.type.startsWith("image/")) return;
+    if (file.size > 20 * 1024 * 1024) { notice("A imagem precisa ter até 20 MB para abrir o recorte.", true); return; }
+    cropContext = context;
+    cropState = null;
+    cropStage.classList.toggle("square", context === "profile");
+    cropSourceUrl = URL.createObjectURL(file);
+    cropSource = new Image();
+    cropSource.onload = () => {
+      cropImage.src = cropSourceUrl;
+      cropModal.classList.add("open");
+      cropModal.setAttribute("aria-hidden", "false");
+      document.body.classList.add("modal-open");
+      requestAnimationFrame(initializeCrop);
+    };
+    cropSource.onerror = () => { notice("Não foi possível abrir essa imagem.", true); closeCrop(true); };
+    cropSource.src = cropSourceUrl;
+  }
+  function closeCrop(cancelled) {
+    cropModal.classList.remove("open");
+    cropModal.setAttribute("aria-hidden", "true");
+    if (!workModal.classList.contains("open")) document.body.classList.remove("modal-open");
+    if (cropSourceUrl) URL.revokeObjectURL(cropSourceUrl);
+    cropSourceUrl = ""; cropSource = null; cropState = null;
+    if (cancelled) {
+      if (cropContext === "work") workForm.elements.image.value = "";
+      if (cropContext === "profile") $("#profileForm").elements.photo.value = "";
+    }
+  }
+  $("#cancelCrop").addEventListener("click", () => closeCrop(true));
+  $("#cancelCropBottom").addEventListener("click", () => closeCrop(true));
+  cropModal.addEventListener("click", (e) => { if (e.target === cropModal) closeCrop(true); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && cropModal.classList.contains("open")) closeCrop(true); });
+  cropStage.addEventListener("pointerdown", (e) => {
+    if (!cropState) return;
+    cropStage.setPointerCapture(e.pointerId);
+    cropState.drag = { pointerId: e.pointerId, x: e.clientX, y: e.clientY, imageX: cropState.x, imageY: cropState.y };
+  });
+  cropStage.addEventListener("pointermove", (e) => {
+    if (!cropState?.drag || cropState.drag.pointerId !== e.pointerId) return;
+    cropState.x = cropState.drag.imageX + e.clientX - cropState.drag.x;
+    cropState.y = cropState.drag.imageY + e.clientY - cropState.drag.y;
+    drawCropPosition();
+  });
+  ["pointerup", "pointercancel"].forEach((name) => cropStage.addEventListener(name, () => { if (cropState) cropState.drag = null; }));
+  cropZoom.addEventListener("input", () => {
+    if (!cropState) return;
+    const centerX = (cropState.width / 2 - cropState.x) / cropState.imageWidth;
+    const centerY = (cropState.height / 2 - cropState.y) / cropState.imageHeight;
+    cropState.zoom = Number(cropZoom.value);
+    cropState.imageWidth = cropSource.naturalWidth * cropState.fit * cropState.zoom;
+    cropState.imageHeight = cropSource.naturalHeight * cropState.fit * cropState.zoom;
+    cropState.x = cropState.width / 2 - centerX * cropState.imageWidth;
+    cropState.y = cropState.height / 2 - centerY * cropState.imageHeight;
+    drawCropPosition();
+  });
+  $("#applyCrop").addEventListener("click", () => {
+    if (!cropState || !cropSource) return;
+    const canvas = document.createElement("canvas");
+    canvas.width = cropContext === "profile" ? 1200 : 1200;
+    canvas.height = cropContext === "profile" ? 1500 : 1600;
+    const sourceX = -cropState.x / (cropState.fit * cropState.zoom);
+    const sourceY = -cropState.y / (cropState.fit * cropState.zoom);
+    const sourceWidth = cropState.width / (cropState.fit * cropState.zoom);
+    const sourceHeight = cropState.height / (cropState.fit * cropState.zoom);
+    canvas.getContext("2d").drawImage(cropSource, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, canvas.width, canvas.height);
+    canvas.toBlob((blob) => {
+      if (!blob) { notice("Não foi possível preparar a imagem recortada.", true); return; }
+      const cropped = new File([blob], `${cropContext}-recortada.jpg`, { type: "image/jpeg" });
+      const previewUrl = URL.createObjectURL(blob);
+      if (cropContext === "work") {
+        pendingWorkFile = cropped;
+        if (workPreviewUrl) URL.revokeObjectURL(workPreviewUrl);
+        workPreviewUrl = previewUrl; workPreview.src = previewUrl; workPreview.hidden = false;
+      } else {
+        pendingProfileFile = cropped;
+        if (profilePreviewUrl) URL.revokeObjectURL(profilePreviewUrl);
+        profilePreviewUrl = previewUrl; profilePreview.src = previewUrl;
+      }
+      closeCrop(false);
+    }, "image/jpeg", 0.9);
+  });
   function openWorkModal(work) {
     workForm.reset();
+    pendingWorkFile = null;
+    if (workPreviewUrl) { URL.revokeObjectURL(workPreviewUrl); workPreviewUrl = ""; }
     workForm.elements.id.value = work ? work.id : "";
     workForm.elements.title.value = work ? work.title : "";
     workForm.elements.style.value = work ? work.style : "";
@@ -97,24 +207,27 @@
   workForm.elements.image.addEventListener("change", () => {
     const file = workForm.elements.image.files[0];
     if (!file) return;
-    workPreview.src = URL.createObjectURL(file);
-    workPreview.hidden = false;
+    openCrop(file, "work");
   });
+  $("#profileForm").elements.photo.addEventListener("change", (e) => { const file = e.currentTarget.files[0]; if (file) openCrop(file, "profile"); });
   $("#workForm").addEventListener("submit", async (e) => {
     e.preventDefault(); const form = e.currentTarget, fd = new FormData(form), id = fd.get("id"), file = fd.get("image");
     const button = $("#saveWork"); button.disabled = true;
     try {
       let imageUrl;
-      if (file && file.size) {
-        if (file.size > 8 * 1024 * 1024) throw new Error("A imagem precisa ter até 8 MB.");
-        const path = `${crypto.randomUUID()}-${file.name.replace(/[^\w.-]/g, "-")}`;
-        const { error } = await client.storage.from("tattoo-portfolio").upload(path, file, { upsert: false }); if (error) throw error;
+      const imageToUpload = pendingWorkFile || file;
+      if (imageToUpload && imageToUpload.size) {
+        if (imageToUpload.size > 8 * 1024 * 1024) throw new Error("A imagem recortada precisa ter até 8 MB.");
+        const path = `${crypto.randomUUID()}-${imageToUpload.name.replace(/[^\w.-]/g, "-")}`;
+        const { error } = await client.storage.from("tattoo-portfolio").upload(path, imageToUpload, { upsert: false }); if (error) throw error;
         imageUrl = client.storage.from("tattoo-portfolio").getPublicUrl(path).data.publicUrl;
       }
       const row = { title: fd.get("title"), style: fd.get("style"), size: fd.get("size"), body_part: fd.get("body_part"), description: fd.get("description") };
       if (imageUrl) row.image_url = imageUrl;
       const result = id ? await client.from("portfolio").update(row).eq("id", id) : await client.from("portfolio").insert({ ...row, image_url: imageUrl, sort_order: Math.floor(Date.now() / 1000) });
       if (result.error) throw result.error;
+      pendingWorkFile = null;
+      if (workPreviewUrl) { URL.revokeObjectURL(workPreviewUrl); workPreviewUrl = ""; }
       closeWorkModal();
       await loadWorks(); notice(id ? "Trabalho atualizado e publicado." : "Novo trabalho adicionado ao portfólio.");
     } catch (error) { notice(error.message, true); } finally { button.disabled = false; }
@@ -133,15 +246,20 @@
     data.forEach((w) => $(`[data-edit="${w.id}"]`).addEventListener("click", () => openWorkModal(w)));
   }
   $("#profileForm").addEventListener("submit", async (e) => {
-    e.preventDefault(); const fd = new FormData(e.currentTarget); let photoUrl;
+    e.preventDefault(); const form = e.currentTarget, fd = new FormData(form); let photoUrl;
     try {
-      const file = fd.get("photo");
+      const file = pendingProfileFile || fd.get("photo");
       if (file && file.size) { if (file.size > 8 * 1024 * 1024) throw new Error("A imagem precisa ter até 8 MB."); const path = `profile/${crypto.randomUUID()}-${file.name.replace(/[^\w.-]/g, "-")}`; const { error } = await client.storage.from("tattoo-portfolio").upload(path, file); if (error) throw error; photoUrl = client.storage.from("tattoo-portfolio").getPublicUrl(path).data.publicUrl; }
       const row = { id: 1, display_name: fd.get("display_name"), bio: fd.get("bio"), updated_at: new Date().toISOString() }; if (photoUrl) row.photo_url = photoUrl;
-      const { error } = await client.from("profile").upsert(row); if (error) throw error; notice("Perfil atualizado.");
+      const { error } = await client.from("profile").upsert(row); if (error) throw error;
+      if (photoUrl) profilePreview.src = photoUrl;
+      pendingProfileFile = null;
+      if (profilePreviewUrl) { URL.revokeObjectURL(profilePreviewUrl); profilePreviewUrl = ""; }
+      form.elements.photo.value = "";
+      notice("Perfil atualizado.");
     } catch (error) { notice(error.message, true); }
   });
-  async function loadProfile() { const { data, error } = await client.from("profile").select("*").eq("id", 1).single(); if (error) throw error; const f = $("#profileForm"); f.elements.display_name.value = data.display_name; f.elements.bio.value = data.bio; }
+  async function loadProfile() { const { data, error } = await client.from("profile").select("*").eq("id", 1).single(); if (error) throw error; const f = $("#profileForm"); f.elements.display_name.value = data.display_name; f.elements.bio.value = data.bio; profilePreview.src = data.photo_url || "assets/duda.jpg"; }
   client?.auth.onAuthStateChange((_event, session) => { if (!session) { dashboard.hidden = true; loginView.hidden = false; } });
   adminSession().catch((error) => msg("#loginMessage", error.message));
 })();

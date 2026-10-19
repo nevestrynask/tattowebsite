@@ -23,13 +23,22 @@
       <section class="panel" id="pedidos"><div class="section-head"><div><p class="eyebrow">Solicitações recebidas</p><h2>Pedidos</h2></div><button id="refreshOrders" class="secondary">Atualizar</button></div><div id="ordersList" class="orders"></div></section>
       <section class="panel" id="agenda"><p class="eyebrow">Disponibilidade</p><h2>Agenda</h2><p>Todos os dias a partir de hoje ficam disponíveis por padrão. Marque aqui as datas em que não poderá atender.</p><form id="availabilityForm" class="inline"><label>Data<input name="date" type="date" required></label><label>Disponibilidade<select name="is_available"><option value="true">Disponível</option><option value="false">Indisponível</option></select></label><button>Salvar data</button></form><div id="availabilityList"></div></section>
       <section class="panel" id="portfolio"><p class="eyebrow">Galeria pública</p><h2>Portfólio</h2><p>Clique em um trabalho para editar. As alterações aparecem no site depois de salvar.</p><div id="worksList" class="works"></div></section>
-      <section class="panel" id="perfil"><p class="eyebrow">Informações do site</p><h2>Perfil</h2><form id="profileForm"><label>Nome<input name="display_name" required maxlength="100"></label><label>Apresentação<textarea name="bio" rows="4" maxlength="1000"></textarea></label><label>Foto de perfil<input name="photo" type="file" accept="image/jpeg,image/png,image/webp"></label><button>Salvar perfil</button></form></section>
+      <section class="panel" id="perfil"><p class="eyebrow">Informações do site</p><h2>Perfil</h2><form id="profileForm"><label>Nome<input name="display_name" required maxlength="100"></label><label>Apresentação<textarea name="bio" rows="4" maxlength="1000"></textarea></label><div class="profile-image-current"><span>Foto de perfil atual</span><img id="profilePreview" src="assets/duda.jpg" alt="Foto de perfil atual"></div><label>Trocar foto de perfil<input name="photo" type="file" accept="image/jpeg,image/png,image/webp"></label><button>Salvar perfil</button></form></section>
     </section>
   </main>
   <div id="workModal" class="work-modal" aria-hidden="true">
     <div class="work-modal-card" role="dialog" aria-modal="true" aria-labelledby="workModalTitle">
       <div class="modal-head"><div><p class="eyebrow">Portfólio</p><h2 id="workModalTitle">Adicionar trabalho</h2></div><button type="button" class="modal-close secondary" id="closeWorkModal" aria-label="Fechar janela">×</button></div>
       <form id="workForm" class="work-form"><input name="id" type="hidden"><label>Título<input name="title" required maxlength="100"></label><label>Estilo<input name="style" required maxlength="80"></label><label>Tamanho<input name="size" placeholder="Ex.: 12 cm" maxlength="40"></label><label>Local do corpo<input name="body_part" maxlength="80"></label><label>Foto<input name="image" type="file" accept="image/jpeg,image/png,image/webp" required></label><img id="workPreview" class="work-preview" alt="Prévia da tatuagem" hidden><label class="description-field">Descrição da tatuagem<textarea name="description" rows="4" maxlength="1500" placeholder="Uma tatuagem autoral feita pela Duda Neves."></textarea></label><div class="modal-actions"><button type="button" id="deleteWork" class="danger" hidden>Excluir trabalho</button><span class="action-spacer"></span><button type="button" id="cancelWorkModal" class="secondary">Cancelar</button><button type="submit" id="saveWork">Salvar trabalho</button></div></form>
+    </div>
+  </div>
+  <div id="cropModal" class="crop-modal" aria-hidden="true">
+    <div class="crop-modal-card" role="dialog" aria-modal="true" aria-labelledby="cropTitle">
+      <div class="modal-head"><div><p class="eyebrow">Ajustar imagem</p><h2 id="cropTitle">Posicione sua foto</h2></div><button type="button" id="cancelCrop" class="modal-close secondary" aria-label="Cancelar recorte">×</button></div>
+      <p class="crop-help">Arraste a imagem para ajustar o enquadramento e use o controle para aproximar ou afastar.</p>
+      <div id="cropStage" class="crop-stage"><img id="cropImage" alt="Imagem para recortar"></div>
+      <label class="zoom-label">Zoom<input id="cropZoom" type="range" min="1" max="4" step="0.01" value="1"></label>
+      <div class="modal-actions"><span class="action-spacer"></span><button type="button" id="cancelCropBottom" class="secondary">Cancelar</button><button type="button" id="applyCrop">Usar esta imagem</button></div>
     </div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase-config.js"></script><script src="admin.js"></script>
