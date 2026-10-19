@@ -181,9 +181,9 @@
                         <!-- FOTO DA TATUADORA (para trocar, edite o src) -->
                         <figure class="hero-photo">
                             <div class="hero-photo-frame">
-                                <img src="assets/duda.jpg" alt="Duda Neves, tatuadora" />
+                                <img class="profile-photo" src="assets/duda.jpg" alt="Duda Neves, tatuadora" />
                             </div>
-                            <figcaption class="mono">Duda Neves · tatuadora</figcaption>
+                            <figcaption class="mono" id="profileCaption">Duda Neves · tatuadora</figcaption>
                         </figure>
                     </div>
                     <div class="hero-bottom">
@@ -234,9 +234,9 @@
                     <div class="story">
                         <div class="portrait">
                             <div class="frame" id="frame">
-                                <img class="foto" src="assets/duda.jpg" alt="Duda Neves, tatuadora" />
+                                <img class="foto profile-photo" src="assets/duda.jpg" alt="Duda Neves, tatuadora" />
                             </div>
-                            <div class="stamp" aria-hidden="true">Maria Eduarda Neves</div>
+                            <div class="stamp" id="profileStamp" aria-hidden="true">Maria Eduarda Neves</div>
                         </div>
                         <div>
                             <p class="story-text" id="storyText">
@@ -449,7 +449,7 @@
                                 ></div>
                             </fieldset>
                             <fieldset>
-                                <legend><span>3</span>Data e hora</legend>
+                                        <legend><span>3</span>Data de preferência</legend>
                                 <div class="cal">
                                     <div class="cal-head">
                                         <button
@@ -493,15 +493,10 @@
                                     <div class="cal-grid" id="calGrid"></div>
                                     <div class="legend">
                                         <span>Atendo de terça a sábado</span
-                                        ><span>● ponto vermelho: dia lotado</span>
+                        ><span>● datas fechadas não podem ser selecionadas</span>
                                     </div>
                                 </div>
-                                <div
-                                    class="slots"
-                                    id="slots"
-                                    role="group"
-                                    aria-label="Horário"
-                                ></div>
+                                <p class="hint">A data é uma preferência. A Duda confirma pelo WhatsApp se consegue atender nesse dia e combina o melhor horário com você.</p>
                             </fieldset>
                             <fieldset style="border-bottom: 0">
                                 <legend><span>4</span>Seus dados</legend>
@@ -543,8 +538,6 @@
                                 <dd id="tSize"></dd>
                                 <dt class="mono">Local</dt>
                                 <dd id="tPart"></dd>
-                                <dt class="mono">Sessão</dt>
-                                <dd id="tTime"></dd>
                                 <dt class="mono">Data</dt>
                                 <dd id="tDate"></dd>
                                 <dt class="mono">Nome</dt>
@@ -663,7 +656,7 @@
             <div class="wrap">
                 <div class="foot-big" aria-hidden="true">Duda Neves Tatto</div>
                 <div class="foot-row mono">
-                    <span>© 2026 Duda Neves Tatto</span><span>Todas as artes são autorais</span>
+                    <span>© 2026 Duda Neves Tatto</span><span>Todas as artes são autorais · <a href="admin.html">Área da tatuadora</a></span>
                 </div>
             </div>
         </footer>
@@ -673,6 +666,8 @@
         <!-- BIBLIOTECAS DE ANIMAÇÃO (as mesmas do site da Fanta) E O NOSSO SCRIPT -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+        <script src="supabase-config.js"></script>
         <script src="script.js"></script>
     </body>
 </html>

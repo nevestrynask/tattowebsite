@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Painel administrativo · Duda Neves Tatto</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Familjen+Grotesk:wght@400;500;600&family=Pirata+One&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+  <header><a class="brand" href="index.html">Duda Neves <span>Tatto</span></a><a href="index.html">Ver site ↗</a></header>
+  <main>
+    <section id="login" class="panel login">
+      <p class="eyebrow">Área restrita</p><h1>Painel administrativo</h1>
+      <p>Entre com o e-mail e a senha cadastrados no Supabase.</p>
+      <form id="loginForm"><label>E-mail<input name="email" type="email" required autocomplete="username"></label><label>Senha<input name="password" type="password" required autocomplete="current-password"></label><button>Entrar</button></form>
+      <p id="loginMessage" class="message" role="status"></p>
+    </section>
+    <section id="dashboard" hidden>
+      <div class="welcome"><div><p class="eyebrow">Área administrativa</p><h1>Olá, Duda.</h1><p>As alterações salvas aparecem no site para todos.</p></div><button id="logout" class="secondary">Sair</button></div>
+      <p id="notice" class="message" role="status"></p>
+      <nav class="tabs"><a href="#pedidos">Pedidos</a><a href="#agenda">Agenda</a><a href="#portfolio">Portfólio</a><a href="#perfil">Perfil</a></nav>
+      <section class="panel" id="pedidos"><div class="section-head"><div><p class="eyebrow">Solicitações recebidas</p><h2>Pedidos</h2></div><button id="refreshOrders" class="secondary">Atualizar</button></div><div id="ordersList" class="orders"></div></section>
+      <section class="panel" id="agenda"><p class="eyebrow">Disponibilidade</p><h2>Agenda</h2><p>Marque os dias em que pode atender. Por padrão, o calendário considera terça a sábado disponíveis.</p><form id="availabilityForm" class="inline"><label>Data<input name="date" type="date" required></label><label>Disponibilidade<select name="is_available"><option value="true">Disponível</option><option value="false">Indisponível</option></select></label><button>Salvar data</button></form><div id="availabilityList"></div></section>
+      <section class="panel" id="portfolio"><p class="eyebrow">Galeria pública</p><h2>Portfólio</h2><form id="workForm" class="work-form"><input name="id" type="hidden"><label>Título<input name="title" required maxlength="100"></label><label>Estilo<input name="style" required maxlength="80"></label><label>Tamanho<input name="size" placeholder="Ex.: 12 cm" maxlength="40"></label><label>Local do corpo<input name="body_part" maxlength="80"></label><label>Foto<input name="image" type="file" accept="image/jpeg,image/png,image/webp" required></label><button>Adicionar trabalho</button><button type="button" id="cancelEdit" class="secondary" hidden>Cancelar edição</button></form><div id="worksList" class="works"></div></section>
+      <section class="panel" id="perfil"><p class="eyebrow">Informações do site</p><h2>Perfil</h2><form id="profileForm"><label>Nome<input name="display_name" required maxlength="100"></label><label>Apresentação<textarea name="bio" rows="4" maxlength="1000"></textarea></label><label>Foto de perfil<input name="photo" type="file" accept="image/jpeg,image/png,image/webp"></label><button>Salvar perfil</button></form></section>
+    </section>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase-config.js"></script><script src="admin.js"></script>
+</body>
+</html>

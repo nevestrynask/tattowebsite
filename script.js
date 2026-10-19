@@ -14,6 +14,22 @@
     function sym(id) {
         return '<svg viewBox="0 0 100 100" aria-hidden="true"><use href="#s-' + id + '"/></svg>';
     }
+    var db = null;
+    if (window.supabase && window.DN_SUPABASE_URL && window.DN_SUPABASE_ANON_KEY && !window.DN_SUPABASE_URL.includes("COLE_")) {
+        db = window.supabase.createClient(window.DN_SUPABASE_URL, window.DN_SUPABASE_ANON_KEY);
+    }
+    function safe(v) { return String(v || "").replace(/[&<>"']/g, function (c) { return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]; }); }
+    if (db) db.from("profile").select("display_name,bio,photo_url").eq("id", 1).maybeSingle().then(function (res) {
+        if (res.error || !res.data) return;
+        var p = res.data;
+        if (p.display_name) {
+            $("#profileCaption").textContent = p.display_name + " · tatuadora";
+            $("#profileStamp").textContent = p.display_name;
+            document.querySelectorAll(".profile-photo").forEach(function (img) { img.alt = p.display_name + ", tatuadora"; });
+        }
+        if (p.bio) $("#storyText").textContent = p.bio;
+        if (p.photo_url) document.querySelectorAll(".profile-photo").forEach(function (img) { img.src = p.photo_url; });
+    });
 
     // ----------------------------------------------
     // TEMA CLARO / ESCURO
@@ -153,12 +169,13 @@
     // Devolve a foto (se existir) ou o desenho de exemplo
     function arte(w) {
         if (w.foto) {
-            return '<img src="' + w.foto + '" alt="' + w.t + ', tatuagem ' + w.s + '" loading="lazy" />';
+            return '<img src="' + safe(w.foto) + '" alt="' + safe(w.t) + ', tatuagem ' + safe(w.s) + '" loading="lazy" />';
         }
         return sym(w.y);
     }
 
     var grid = $("#grid");
+    function renderWorks() {
     grid.innerHTML = works
         .map(function (w, i) {
             return (
@@ -167,25 +184,27 @@
                 '" type="button" data-i="' +
                 i +
                 '" data-s="' +
-                w.s +
+                safe(w.s) +
                 '" aria-label="' +
-                w.t +
+                safe(w.t) +
                 ", " +
-                w.s +
+                safe(w.s) +
                 '">' +
                 '<span class="ph mono">[ foto ]</span><span class="art">' +
                 arte(w) +
                 "</span>" +
                 '<span class="cap"><b>' +
-                w.t +
+                safe(w.t) +
                 "</b><span>" +
-                w.s +
+                safe(w.s) +
                 " · " +
-                w.z +
+                safe(w.z) +
                 "</span></span></button>"
             );
         })
         .join("");
+    }
+    renderWorks();
     var styles = ["Todos", "Realismo","Fine line", "Blackwork", "Caligrafia Oriental", "Anime"];
     var filters = $("#filters");
     filters.innerHTML = styles
@@ -221,6 +240,15 @@
                 { scale: 1, opacity: 1, duration: 0.45, stagger: 0.05, ease: "back.out(1.5)" },
             );
         }
+        if (window.ScrollTrigger) ScrollTrigger.refresh();
+    });
+    if (db) db.from("portfolio").select("title,style,size,body_part,image_url").eq("is_published", true).order("sort_order").then(function (res) {
+        if (res.error || !res.data) return;
+        works = res.data.map(function (w) { return { t: w.title, s: w.style, y: "star", z: w.size, p: w.body_part, foto: w.image_url }; });
+        var foundStyles = works.map(function (w) { return w.s; });
+        styles = ["Todos"].concat(foundStyles.filter(function (s, i) { return foundStyles.indexOf(s) === i; }));
+        filters.innerHTML = styles.map(function (s, i) { return '<button class="chip" type="button" aria-pressed="' + (i === 0) + '" data-f="' + safe(s) + '">' + safe(s) + '</button>'; }).join("");
+        renderWorks();
         if (window.ScrollTrigger) ScrollTrigger.refresh();
     });
 
@@ -307,8 +335,7 @@
         "Pescoço",
         "Outro",
     ];
-    var SLOTS = ["10:00", "13:30", "16:00"];
-    var st = { style: "Fine line", size: 10, part: "Antebraço", date: null, time: null };
+    var st = { style: "Fine line", size: 10, part: "Antebraço", date: null };
     var today = new Date();
     today.setHours(0, 0, 0, 0);
     var view = new Date(today.getFullYear(), today.getMonth(), 1);
@@ -363,12 +390,13 @@
         renderTicket();
     });
 
+    var availability = {};
+    function dateKey(d) { return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
     function closed(d) {
+        var key = dateKey(d);
+        if (Object.prototype.hasOwnProperty.call(availability, key)) return !availability[key];
         var w = d.getDay();
         return w === 0 || w === 1;
-    }
-    function full(d) {
-        return !closed(d) && (d.getDate() * 7 + d.getMonth()) % 5 === 0;
     }
     function renderCal() {
         $("#monthLabel").textContent = view.toLocaleDateString("pt-BR", {
@@ -385,11 +413,10 @@
         var n = new Date(view.getFullYear(), view.getMonth() + 1, 0).getDate();
         for (var d = 1; d <= n; d++) {
             var dt = new Date(view.getFullYear(), view.getMonth(), d);
-            var off = dt < today || closed(dt) || full(dt);
+            var off = dt < today || closed(dt);
             var sel = st.date && st.date.getTime() === dt.getTime();
             html +=
                 '<button type="button" class="day' +
-                (full(dt) && dt >= today ? " full" : "") +
                 '" data-d="' +
                 d +
                 '"' +
@@ -398,7 +425,6 @@
                 !!sel +
                 '" aria-label="' +
                 dt.toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" }) +
-                (full(dt) && dt >= today ? ", lotado" : "") +
                 '">' +
                 d +
                 "</button>";
@@ -416,43 +442,17 @@
         view = new Date(view.getFullYear(), view.getMonth() + 1, 1);
         renderCal();
     });
+    if (db) {
+        db.from("availability").select("date,is_available").then(function (res) {
+            if (!res.error && res.data) res.data.forEach(function (row) { availability[row.date] = row.is_available; });
+            renderCal();
+        });
+    }
     $("#calGrid").addEventListener("click", function (e) {
         var b = e.target.closest(".day");
         if (!b || b.disabled) return;
         st.date = new Date(view.getFullYear(), view.getMonth(), +b.getAttribute("data-d"));
-        if (st.time && slotBusy(st.time)) st.time = null;
         renderCal();
-        renderSlots();
-        renderTicket();
-    });
-    function slotBusy(t) {
-        return st.date ? (st.date.getDate() + SLOTS.indexOf(t)) % 4 === 0 : false;
-    }
-    function renderSlots() {
-        $("#slots").innerHTML =
-            SLOTS.map(function (t) {
-                var off = !st.date || slotBusy(t);
-                return (
-                    '<button type="button" class="chip" data-t="' +
-                    t +
-                    '"' +
-                    (off ? ' disabled style="opacity:.4;cursor:not-allowed"' : "") +
-                    ' aria-pressed="' +
-                    (st.time === t) +
-                    '">' +
-                    t +
-                    "</button>"
-                );
-            }).join("") +
-            (st.date
-                ? ""
-                : '<span class="hint" style="align-self:center">Escolha um dia para ver os horários.</span>');
-    }
-    $("#slots").addEventListener("click", function (e) {
-        var b = e.target.closest(".chip");
-        if (!b || b.disabled) return;
-        st.time = b.getAttribute("data-t");
-        renderSlots();
         renderTicket();
     });
 
@@ -474,13 +474,12 @@
         put("#tStyle", st.style);
         put("#tSize", st.size + " cm");
         put("#tPart", st.part);
-        put("#tTime", st.time);
         put("#tDate", dateText());
         put("#tName", $("#fName").value.trim());
     }
     $("#fName").addEventListener("input", renderTicket);
 
-    $("#bookForm").addEventListener("submit", function (e) {
+    $("#bookForm").addEventListener("submit", async function (e) {
         e.preventDefault();
         var name = $("#fName").value.trim(),
             phone = $("#fPhone").value.replace(/\D/g, ""),
@@ -490,10 +489,6 @@
         done.classList.remove("show");
         if (!st.date) {
             err.textContent = "Escolha um dia no calendário.";
-            return;
-        }
-        if (!st.time) {
-            err.textContent = "Escolha um horário para o dia selecionado.";
             return;
         }
         if (!name) {
@@ -518,19 +513,28 @@
             st.size +
             " cm\nLocal: " +
             st.part +
-            "\nData: " +
+            "\nData de preferência: " +
             dateText() +
-            ", às " +
-            st.time +
+            "\nHorário: a combinar pelo WhatsApp" +
             (idea ? "\n\nIdeia: " + idea : "");
+        var orderSaved = false;
+        if (db) {
+            var preferredDate = dateKey(st.date);
+            var savedOrder = await db.from("orders").insert({ name: name, phone: phone, style: st.style, size_cm: st.size, body_part: st.part, preferred_date: preferredDate, idea: idea });
+            orderSaved = !savedOrder.error;
+        }
         $("#msg").textContent = msg;
         $("#wa").href = "https://wa.me/5543988051250?text=" + encodeURIComponent(msg);
         done.classList.add("show");
+        var heading = $("#done strong"), note = $("#done p");
+        if (heading) heading.textContent = orderSaved ? "Pedido registrado." : "Pedido montado.";
+        if (note) note.lastChild.textContent = orderSaved
+            ? " A Duda já recebeu seu pedido no painel; abra o WhatsApp para conversar e combinar o horário."
+            : " Ele só chega à Duda depois que você abrir o WhatsApp e enviar a mensagem.";
         if (window.gsap && !reduce) gsap.from(done, { y: 16, opacity: 0, duration: 0.5 });
     });
     renderSize();
     renderCal();
-    renderSlots();
     renderTicket();
 
     // ----------------------------------------------
