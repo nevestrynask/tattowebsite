@@ -68,7 +68,7 @@
   const profileInputs = { heroPhoto: $("#profileForm").elements.hero_photo, storyPhoto: $("#profileForm").elements.story_photo };
   const profilePreviewUrls = { heroPhoto: "", storyPhoto: "" };
   let profileState = null;
-  let cropSource = null, cropSourceFile = null, cropSourceUrl = "", cropContext = "", cropState = null;
+  let cropSource = null, cropSourceFile = null, cropSourceUrl = "", cropContext = "", cropState = null, cropFromPicker = false;
   let pendingWorkFile = null, pendingProfileFiles = { heroPhoto: null, storyPhoto: null }, workPreviewUrl = "";
   const isProfilePhoto = (context) => context === "heroPhoto" || context === "storyPhoto";
   function clampCrop() {
@@ -100,10 +100,11 @@
     cropState.y = (height - cropState.imageHeight) / 2;
     drawCropPosition();
   }
-  function openCrop(file, context) {
+  function openCrop(file, context, fromPicker = false) {
     if (!file || !file.type.startsWith("image/")) return;
     if (file.size > 20 * 1024 * 1024) { notice("A imagem precisa ter até 20 MB para abrir o recorte.", true); return; }
     cropContext = context;
+    cropFromPicker = fromPicker;
     cropSourceFile = file;
     cropState = null;
     cropAspect.value = "original";
@@ -128,8 +129,9 @@
     cropSourceUrl = ""; cropSource = null; cropSourceFile = null; cropState = null;
     if (cancelled) {
       if (cropContext === "work") workForm.elements.image.value = "";
-      if (isProfilePhoto(cropContext)) profileInputs[cropContext].value = "";
+      if (cropFromPicker && isProfilePhoto(cropContext)) profileInputs[cropContext].value = "";
     }
+    cropFromPicker = false;
   }
   $("#cancelCrop").addEventListener("click", () => closeCrop(true));
   $("#cancelCropBottom").addEventListener("click", () => closeCrop(true));
@@ -242,7 +244,19 @@
     if (!file) return;
     openCrop(file, "work");
   });
-  Object.entries(profileInputs).forEach(([context, input]) => input.addEventListener("change", (e) => { const file = e.currentTarget.files[0]; if (file) openCrop(file, context); }));
+  Object.entries(profileInputs).forEach(([context, input]) => input.addEventListener("change", (e) => { const file = e.currentTarget.files[0]; if (file) openCrop(file, context, true); }));
+  document.querySelectorAll("[data-edit-photo]").forEach((button) => button.addEventListener("click", async () => {
+    const context = button.dataset.editPhoto;
+    try {
+      const currentFile = pendingProfileFiles[context] || profileInputs[context].files[0];
+      if (currentFile) { openCrop(currentFile, context); return; }
+      const response = await fetch(profilePreviews[context].src);
+      if (!response.ok) throw new Error("Não foi possível carregar essa foto para editar.");
+      const blob = await response.blob();
+      const extension = blob.type === "image/png" ? "png" : blob.type === "image/webp" ? "webp" : "jpg";
+      openCrop(new File([blob], `${context}.${extension}`, { type: blob.type || "image/jpeg" }), context);
+    } catch (error) { notice(error.message || "Não foi possível abrir o recorte dessa foto.", true); }
+  }));
   $("#workForm").addEventListener("submit", async (e) => {
     e.preventDefault(); const form = e.currentTarget, fd = new FormData(form), id = fd.get("id"), file = fd.get("image");
     const button = $("#saveWork"); button.disabled = true;
