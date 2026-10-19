@@ -427,8 +427,7 @@
     function closed(d) {
         var key = dateKey(d);
         if (Object.prototype.hasOwnProperty.call(availability, key)) return !availability[key];
-        var w = d.getDay();
-        return w === 0 || w === 1;
+        return false;
     }
     function renderCal() {
         $("#monthLabel").textContent = view.toLocaleDateString("pt-BR", {
