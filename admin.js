@@ -60,9 +60,49 @@
     $("#availabilityList").innerHTML = future.length ? future.map((d) => `<div class="date-card"><span>${new Date(d.date + "T12:00:00").toLocaleDateString("pt-BR")} · ${d.is_available ? "Disponível" : "Indisponível"}</span><button class="secondary" data-date="${d.date}">Remover exceção</button></div>`).join("") : '<p class="empty">Sem exceções futuras cadastradas.</p>';
     $("#availabilityList").querySelectorAll("[data-date]").forEach((b) => b.addEventListener("click", async () => { const { error } = await client.from("availability").delete().eq("date", b.dataset.date); if (error) notice(error.message, true); else { await loadAvailability(); notice("Exceção removida. O dia voltou a ficar disponível."); } }));
   }
+  const workModal = $("#workModal"), workForm = $("#workForm"), workPreview = $("#workPreview");
+  let workReturnFocus = null;
+  const defaultWorkDescription = "Uma tatuagem autoral feita pela Duda Neves.";
+  function openWorkModal(work) {
+    workForm.reset();
+    workForm.elements.id.value = work ? work.id : "";
+    workForm.elements.title.value = work ? work.title : "";
+    workForm.elements.style.value = work ? work.style : "";
+    workForm.elements.size.value = work ? work.size : "";
+    workForm.elements.body_part.value = work ? work.body_part : "";
+    workForm.elements.description.value = work ? (work.description || defaultWorkDescription) : "";
+    workForm.elements.image.required = !work;
+    workPreview.src = work ? work.image_url : "";
+    workPreview.hidden = !work;
+    $("#workModalTitle").textContent = work ? "Editar trabalho" : "Adicionar novo trabalho";
+    $("#saveWork").textContent = work ? "Salvar alterações" : "Adicionar trabalho";
+    $("#deleteWork").hidden = !work;
+    workReturnFocus = document.activeElement;
+    workModal.classList.add("open");
+    workModal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("modal-open");
+    requestAnimationFrame(() => workForm.elements.title.focus());
+  }
+  function closeWorkModal() {
+    workModal.classList.remove("open");
+    workModal.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("modal-open");
+    if (workReturnFocus) workReturnFocus.focus();
+  }
+  $("#closeWorkModal").addEventListener("click", closeWorkModal);
+  $("#cancelWorkModal").addEventListener("click", closeWorkModal);
+  workModal.addEventListener("click", (e) => { if (e.target === workModal) closeWorkModal(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && workModal.classList.contains("open")) closeWorkModal(); });
+  $("#workPreview").hidden = true;
+  workForm.elements.image.addEventListener("change", () => {
+    const file = workForm.elements.image.files[0];
+    if (!file) return;
+    workPreview.src = URL.createObjectURL(file);
+    workPreview.hidden = false;
+  });
   $("#workForm").addEventListener("submit", async (e) => {
     e.preventDefault(); const form = e.currentTarget, fd = new FormData(form), id = fd.get("id"), file = fd.get("image");
-    const button = $("button[type=submit]", form); button.disabled = true;
+    const button = $("#saveWork"); button.disabled = true;
     try {
       let imageUrl;
       if (file && file.size) {
@@ -75,18 +115,22 @@
       if (imageUrl) row.image_url = imageUrl;
       const result = id ? await client.from("portfolio").update(row).eq("id", id) : await client.from("portfolio").insert({ ...row, image_url: imageUrl, sort_order: Math.floor(Date.now() / 1000) });
       if (result.error) throw result.error;
-      form.reset(); $("[name=id]", form).value = ""; $("[name=image]", form).required = true; $("#cancelEdit").hidden = true; button.textContent = "Adicionar trabalho";
-      await loadWorks(); notice("Portfólio atualizado e publicado.");
+      closeWorkModal();
+      await loadWorks(); notice(id ? "Trabalho atualizado e publicado." : "Novo trabalho adicionado ao portfólio.");
     } catch (error) { notice(error.message, true); } finally { button.disabled = false; }
   });
-  $("#cancelEdit").addEventListener("click", () => { $("#workForm").reset(); $("[name=id]").value = ""; $("[name=image]").required = true; $("#cancelEdit").hidden = true; $("#workForm button[type=submit]").textContent = "Adicionar trabalho"; });
+  $("#deleteWork").addEventListener("click", async () => {
+    const id = workForm.elements.id.value, title = workForm.elements.title.value;
+    if (!id || !confirm(`Excluir “${title}” do portfólio?`)) return;
+    const button = $("#deleteWork"); button.disabled = true;
+    try { const { error } = await client.from("portfolio").delete().eq("id", id); if (error) throw error; closeWorkModal(); await loadWorks(); notice("Trabalho removido do portfólio público."); }
+    catch (error) { notice(error.message, true); } finally { button.disabled = false; }
+  });
   async function loadWorks() {
     const { data, error } = await client.from("portfolio").select("*").order("sort_order"); if (error) throw error;
-    $("#worksList").innerHTML = data.length ? data.map((w) => `<article class="work-card"><img src="${esc(w.image_url)}" alt="${esc(w.title)}"><h3>${esc(w.title)}</h3><p>${esc(w.style)} · ${esc(w.size)} · ${esc(w.body_part)}</p><div class="work-actions"><button class="secondary" data-edit="${w.id}">Editar</button><button data-delete="${w.id}">Excluir</button></div></article>`).join("") : '<p class="empty">Adicione o primeiro trabalho; a galeria existente no site permanece visível até você publicar itens aqui.</p>';
-    data.forEach((w) => {
-      $(`[data-edit="${w.id}"]`).addEventListener("click", () => { const f = $("#workForm"); ["id","title","style","size","body_part","description"].forEach((k) => { $(`[name="${k}"]`, f).value = k === "id" ? w.id : w[k] || ""; }); $("[name=image]", f).required = false; $("#cancelEdit").hidden = false; $("button[type=submit]", f).textContent = "Salvar alterações"; f.scrollIntoView({ behavior: "smooth" }); });
-      $(`[data-delete="${w.id}"]`).addEventListener("click", async () => { if (!confirm(`Excluir “${w.title}” do portfólio?`)) return; const { error } = await client.from("portfolio").delete().eq("id", w.id); if (error) notice(error.message, true); else { await loadWorks(); notice("Trabalho removido do portfólio público."); } });
-    });
+    $("#worksList").innerHTML = '<button type="button" class="add-work-card" id="addWork"><span class="plus" aria-hidden="true">+</span><span>Adicionar novo trabalho</span></button>' + data.map((w) => `<button type="button" class="work-card" data-edit="${w.id}" aria-label="Editar ${esc(w.title)}"><img src="${esc(w.image_url)}" alt=""><h3>${esc(w.title)}</h3><p>${esc(w.style)} · ${esc(w.size)} · ${esc(w.body_part)}</p></button>`).join("");
+    $("#addWork").addEventListener("click", () => openWorkModal(null));
+    data.forEach((w) => $(`[data-edit="${w.id}"]`).addEventListener("click", () => openWorkModal(w)));
   }
   $("#profileForm").addEventListener("submit", async (e) => {
     e.preventDefault(); const fd = new FormData(e.currentTarget); let photoUrl;
