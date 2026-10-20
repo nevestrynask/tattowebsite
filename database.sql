@@ -1,4 +1,3 @@
--- Execute no SQL Editor do Supabase.
 create extension if not exists pgcrypto;
 
 create table if not exists public.admin_users (

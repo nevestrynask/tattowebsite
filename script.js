@@ -1,5 +1,5 @@
-// Script do site Duda Neves Tatto
-// Tudo está dentro de uma função para não vazar variáveis para a página.
+
+
 
 (function () {
     var $ = function (s, r) {
@@ -65,10 +65,6 @@
         if (heroPhoto && (p.hero_photo_url || p.photo_url)) heroPhoto.src = p.hero_photo_url || p.photo_url;
         if (storyPhoto && (p.story_photo_url || p.photo_url)) storyPhoto.src = p.story_photo_url || p.photo_url;
     });
-
-    // ----------------------------------------------
-    // TEMA CLARO / ESCURO
-    // ----------------------------------------------
     try {
         var saved = localStorage.getItem("dn-theme");
         if (saved) root.setAttribute("data-theme", saved);
@@ -83,10 +79,6 @@
             localStorage.setItem("dn-theme", next);
         } catch (e) {}
     });
-
-    // ----------------------------------------------
-    // MENU NO CELULAR
-    // ----------------------------------------------
     var menuBtn = $("#menuBtn"),
         links = $("#navLinks");
     menuBtn.addEventListener("click", function () {
@@ -99,10 +91,6 @@
             menuBtn.setAttribute("aria-expanded", "false");
         });
     });
-
-    // ----------------------------------------------
-    // FAIXA COM OS ESTILOS
-    // ----------------------------------------------
     var words = [
         "Fine line",
         "Blackwork",
@@ -119,16 +107,6 @@
         });
     }
     $("#marquee").innerHTML = strip + strip;
-
-    // ----------------------------------------------
-    // TRABALHOS (GALERIA E FILTROS)
-    // ----------------------------------------------
-    // COMO COLOCAR AS FOTOS DAS TATUAGENS
-    // 1. Salve as fotos na pasta "assets" (ex.: assets/jasmim.jpg).
-    // 2. Na tatuagem desejada, adicione  foto: "assets/jasmim.jpg"
-    //    Sem "foto", o site mostra o desenho de exemplo.
-    // Campos: t = título, s = estilo, y = desenho de exemplo,
-    //         z = tamanho, p = local do corpo, foto = caminho da imagem
     var works = [
             {
                 t: "Jesus Cristo",
@@ -201,7 +179,6 @@
 		foto: "assets/img8.jpg",
 		},
     ];
-    // Devolve a foto (se existir) ou o desenho de exemplo
     function arte(w) {
         if (w.foto) {
             return '<img src="' + safe(w.foto) + '" alt="' + safe(w.t) + ', tatuagem ' + safe(w.s) + '" loading="lazy" />';
@@ -286,10 +263,6 @@
         renderWorks();
         if (window.ScrollTrigger) ScrollTrigger.refresh();
     });
-
-    // ----------------------------------------------
-    // JANELA DE DETALHE DO TRABALHO
-    // ----------------------------------------------
     var lb = $("#lb"),
         lastFocus = null,
         current = null;
@@ -328,10 +301,6 @@
         lb.classList.remove("open");
         lb.setAttribute("aria-hidden", "true");
     });
-
-    // ----------------------------------------------
-    // CARTÕES QUE INCLINAM COM O MOUSE
-    // ----------------------------------------------
     if (window.matchMedia("(pointer:fine)").matches && !reduce) {
         $$(".tile").forEach(function (t) {
             t.addEventListener("pointermove", function (e) {
@@ -346,10 +315,6 @@
             });
         });
     }
-
-    // ----------------------------------------------
-    // AGENDAMENTO (CALENDÁRIO, HORÁRIOS E FICHA)
-    // ----------------------------------------------
     var STYLES = [
         "Fine line",
         "Blackwork",
@@ -557,7 +522,7 @@
             orderSaved = !savedOrder.error;
         }
         $("#msg").textContent = msg;
-        $("#wa").href = "https://wa.me/5543988051250?text=" + encodeURIComponent(msg);
+        $("#wa").href = "https:
         done.classList.add("show");
         var heading = $("#done strong"), note = $("#done p");
         if (heading) heading.textContent = orderSaved ? "Pedido registrado." : "Pedido montado.";
@@ -570,9 +535,9 @@
     renderCal();
     renderTicket();
 
-    // ----------------------------------------------
-    // BOTÕES DE COPIAR CONTATO
-    // ----------------------------------------------
+    
+    
+    
     $$(".copy").forEach(function (b) {
         b.addEventListener("click", function () {
             var v = b.getAttribute("data-copy"),
@@ -603,9 +568,9 @@
         });
     });
 
-    // ----------------------------------------------
-    // CURSOR PERSONALIZADO
-    // ----------------------------------------------
+    
+    
+    
     if (window.matchMedia("(pointer:fine)").matches && !reduce) {
         var cur = $("#cur"),
             cx = 0,
@@ -629,22 +594,22 @@
         });
     }
 
-    // ----------------------------------------------
-    // ANOS DE ESTRADA (atualiza sozinho a cada virada de ano)
-    // Para mudar o ano de início, troque só o número abaixo.
-    // ----------------------------------------------
+    
+    
+    
+    
     var ANO_INICIO = 2022;
     $("#anosEstrada").setAttribute("data-count", new Date().getFullYear() - ANO_INICIO);
 
-    // ----------------------------------------------
-    // NÚMEROS SEM ANIMAÇÃO (quando não há GSAP)
-    // ----------------------------------------------
+    
+    
+    
     function finalCounts() {
         $$("[data-count]").forEach(function (el) {
             el.textContent = (+el.getAttribute("data-count")).toLocaleString("pt-BR");
         });
     }
-    // Navegação horizontal dos passos sem prender a rolagem vertical da página.
+    
     (function initProcessCarousel() {
         var pin = $("#procPin"), track = $("#procTrack"), prev = $("#procPrev"), next = $("#procNext"), count = $("#procCount");
         if (!pin || !track || !prev || !next || !count) return;
@@ -684,11 +649,11 @@
         return;
     }
 
-    // ----------------------------------------------
-    // ANIMAÇÕES COM GSAP E SCROLLTRIGGER
-    // ----------------------------------------------
+    
+    
+    
     gsap.registerPlugin(ScrollTrigger);
-    // Evita pulos na rolagem do celular quando a barra do navegador some e aparece
+    
     ScrollTrigger.config({ ignoreMobileResize: true });
 
     gsap.from(".hero-name .ln", {
@@ -729,7 +694,7 @@
         stagger: 0.12,
         ease: "power3.out",
     });
-    // Foto da tatuadora entra de baixo, logo depois do título
+    
     gsap.from(".hero-photo", {
         y: 50,
         opacity: 0,
@@ -738,24 +703,24 @@
         ease: "power3.out",
     });
 
-    // ----------------------------------------------
-    // TÍTULO QUE SOME AOS POUCOS AO ROLAR
-    // ----------------------------------------------
+    
+    
+    
     gsap.to(".hero-name", {
-        opacity: 0, // vai ficando transparente
-        y: -60, // e sobe um pouco
+        opacity: 0, 
+        y: -60, 
         ease: "none",
         scrollTrigger: {
             trigger: ".hero-name",
-            start: 0, // começa assim que a página rola
-            end: "bottom 15%", // termina quando o título quase saiu da tela
-            scrub: true, // o efeito acompanha o dedo / a roda do mouse
+            start: 0, 
+            end: "bottom 15%", 
+            scrub: true, 
         },
     });
 
-    // ----------------------------------------------
-    // PEÇAS QUE VOAM AO ROLAR (mesma ideia do site da Fanta)
-    // ----------------------------------------------
+    
+    
+    
     $$(".float").forEach(function (el) {
         var sp = parseFloat(el.getAttribute("data-speed"));
         gsap.to(el, {
@@ -773,9 +738,9 @@
         scrollTrigger: { trigger: ".hero", start: "top top", end: "bottom top", scrub: true },
     });
 
-    // ----------------------------------------------
-    // HISTÓRIA: O TEXTO ACENDE PALAVRA POR PALAVRA
-    // ----------------------------------------------
+    
+    
+    
     wrapStoryWords($("#storyText"));
     animateStoryWords();
     gsap.fromTo(

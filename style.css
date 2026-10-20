@@ -1,15 +1,6 @@
-/* ==========================================================
-   DUDA NEVES TATTO
-   Conceito: folha de flash de tatuagem.
-   Letras góticas gigantes, desenhos soltos que voam ao rolar
-   e uma ficha de agendamento ao lado do formulário.
-   ========================================================== */
 
-/* ----------------------------------------------------------
-   CORES, FONTES E TEMAS
-   O tema escuro é o padrão. O tema claro entra pelo sistema
-   do visitante ou pelo botão da barra de navegação.
-   ---------------------------------------------------------- */
+
+
 :root {
     --bg: #0f1913;
     --bg2: #16241c;
@@ -52,9 +43,7 @@
     color-scheme: light;
 }
 
-/* ----------------------------------------------------------
-   BASE (reset, texto, botões e títulos)
-   ---------------------------------------------------------- */
+
 
 * {
     box-sizing: border-box;
@@ -64,10 +53,10 @@
 
 html {
     scroll-behavior: smooth;
-    /* Impede a página de "arrastar" para os lados no celular */
+    
     overflow-x: clip;
     overscroll-behavior-x: none;
-    /* Esconde a barra de rolagem do computador (a página continua rolando) */
+    
     scrollbar-width: none;
     -ms-overflow-style: none;
 }
@@ -77,8 +66,7 @@ body::-webkit-scrollbar {
     display: none;
 }
 
-/* Tudo o que sai da tela (peças girando, faixa inclinada, animações
-   que entram pelo lado) fica cortado e não cria rolagem lateral. */
+
 main {
     overflow-x: clip;
 }
@@ -199,9 +187,7 @@ h2.display {
     padding-top: max(8px, env(safe-area-inset-top, 0px));
 }
 
-/* ----------------------------------------------------------
-   BARRA DE NAVEGAÇÃO
-   ---------------------------------------------------------- */
+
 .nav {
     position: sticky;
     top: env(safe-area-inset-top, 0px);
@@ -327,9 +313,7 @@ h2.display {
     }
 }
 
-/* ----------------------------------------------------------
-   ABERTURA (HERO)
-   ---------------------------------------------------------- */
+
 .hero {
     position: relative;
     padding-top: clamp(40px, 7vw, 90px);
@@ -352,9 +336,7 @@ h2.display {
     color: var(--muted);
 }
 
-/* Fundo com fotos das tatuagens desfocadas (só dentro do hero, ou seja,
-   acima da faixa com os estilos). Para mais ou menos blur, mude o valor
-   em "blur(14px)". Para mais ou menos visibilidade, mude o "opacity". */
+
 .hero-bg {
     position: absolute;
     inset: 0;
@@ -376,12 +358,11 @@ h2.display {
     display: block;
     opacity: 0.55;
     filter: blur(4px) saturate(0.85);
-    /* aumenta um pouco para as bordas borradas ficarem fora do quadro */
+    
     transform: scale(1.2);
 }
 
-/* Véu por cima das fotos: garante a leitura do texto e some no fim do
-   hero, para a transição até a faixa ficar suave. */
+
 .hero-bg::after {
     content: "";
     position: absolute;
@@ -406,7 +387,7 @@ h2.display {
     }
 }
 
-/* Título à esquerda e foto da tatuadora à direita */
+
 .hero-main {
     display: grid;
     grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
@@ -419,7 +400,7 @@ h2.display {
     font-size: clamp(4.5rem, 15vw, 14rem);
     position: relative;
     z-index: 2;
-    /* o título ocupa só a largura do texto e fica colado na esquerda */
+    
     justify-self: start;
     width: fit-content;
     max-width: 100%;
@@ -631,9 +612,7 @@ h2.display {
     }
 }
 
-/* ----------------------------------------------------------
-   FAIXA COM OS ESTILOS
-   ---------------------------------------------------------- */
+
 .marquee {
     border-block: 2px solid var(--fg);
     background: var(--red);
@@ -642,7 +621,7 @@ h2.display {
     white-space: nowrap;
     transform: rotate(-1.2deg);
     margin-block: 30px;
-    /* um pouco maior que a tela, para a faixa inclinada não deixar cantos vazios */
+    
     margin-inline: -2%;
     width: 104%;
 }
@@ -677,9 +656,7 @@ h2.display {
     }
 }
 
-/* ----------------------------------------------------------
-   SOBRE / HISTÓRIA
-   ---------------------------------------------------------- */
+
 .story {
     display: grid;
     grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
@@ -857,9 +834,7 @@ h2.display {
     }
 }
 
-/* ----------------------------------------------------------
-   TRABALHOS / PORTFÓLIO
-   ---------------------------------------------------------- */
+
 .works-head {
     display: flex;
     justify-content: space-between;
@@ -1068,8 +1043,7 @@ h2.display {
     margin-top: auto;
 }
 
-/* No celular a janela é compacta: a foto ocupa cerca de metade da tela
-   e os botões ficam sempre visíveis embaixo, sem precisar arrastar. */
+
 @media (max-width: 640px) {
     .lb {
         padding: 12px;
@@ -1121,9 +1095,7 @@ h2.display {
     }
 }
 
-/* ----------------------------------------------------------
-   PROCESSO
-   ---------------------------------------------------------- */
+
 .proc {
     background: var(--bg2);
     border-block: 1px solid var(--line);
@@ -1191,8 +1163,7 @@ h2.display {
     color: var(--muted);
 }
 
-/* No celular a página rola para baixo normalmente, mesmo com um passo
-   na tela. Os passos formam uma faixa que o dedo arrasta só para os lados. */
+
 @media (max-width: 860px) {
     .proc {
         padding-block: 48px;
@@ -1230,9 +1201,7 @@ h2.display {
     }
 }
 
-/* ----------------------------------------------------------
-   AGENDAMENTO
-   ---------------------------------------------------------- */
+
 .book {
     display: grid;
     grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
@@ -1544,9 +1513,7 @@ input[type="range"] {
     }
 }
 
-/* ----------------------------------------------------------
-   DÚVIDAS (FAQ)
-   ---------------------------------------------------------- */
+
 .faq {
     max-width: 860px;
     margin-top: 40px;
@@ -1593,9 +1560,7 @@ input[type="range"] {
     max-width: 62ch;
 }
 
-/* ----------------------------------------------------------
-   CONTATO E RODAPÉ
-   ---------------------------------------------------------- */
+
 .contact {
     background: var(--red);
     color: var(--on-accent);
@@ -1704,9 +1669,7 @@ footer {
     margin-top: 24px;
 }
 
-/* ----------------------------------------------------------
-   CURSOR PERSONALIZADO
-   ---------------------------------------------------------- */
+
 .cur {
     position: fixed;
     left: 0;
@@ -1753,9 +1716,7 @@ footer {
     }
 }
 
-/* ----------------------------------------------------------
-   FOTOS REAIS NOS TRABALHOS
-   ---------------------------------------------------------- */
+
 
 .tile.tem-foto .ph {
     display: none;
@@ -1781,5 +1742,5 @@ footer {
     padding: 0;
 }
 
-/* Processo: carrossel horizontal com rolagem vertical da página sempre livre */
+
 .proc-pin{overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scroll-padding-inline:0;overscroll-behavior-x:contain;scrollbar-width:none;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y}.proc-pin::-webkit-scrollbar{display:none}.proc-track{padding-block:10px 16px}.proc-track>.panel{scroll-snap-align:start;scroll-snap-stop:always}.proc-controls{display:flex;align-items:center;gap:8px;margin-top:10px}.proc-hint{display:block;margin:0;color:var(--muted);font-size:12px}.proc-count{margin-left:auto;color:var(--gold);font-size:12px}.proc-arrow{display:grid;place-items:center;width:42px;height:42px;padding:0;border:1px solid var(--line);background:var(--bg);color:var(--fg);font-size:23px;line-height:1;cursor:pointer;transition:background .2s ease,color .2s ease,border-color .2s ease,transform .2s ease}.proc-arrow:hover:not(:disabled){transform:translateY(-2px);border-color:var(--gold);color:var(--gold)}.proc-arrow:disabled{opacity:.35;cursor:default}.proc-arrow:focus-visible{outline:2px solid var(--gold);outline-offset:3px}@media(max-width:860px){.proc-pin{margin-inline:calc(-1 * var(--gutter));scroll-padding-inline:var(--gutter)}.proc-track{padding-inline:var(--gutter)}.proc-track>.panel{scroll-snap-align:start}.proc-controls{margin-top:8px}}@media(prefers-reduced-motion:reduce){.proc-arrow{transition:none}}
