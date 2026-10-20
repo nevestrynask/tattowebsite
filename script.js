@@ -522,7 +522,7 @@
             orderSaved = !savedOrder.error;
         }
         $("#msg").textContent = msg;
-        $("#wa").href = "https:
+        $("#wa").href = "https://wa.me/?text=" + encodeURIComponent(msg);
         done.classList.add("show");
         var heading = $("#done strong"), note = $("#done p");
         if (heading) heading.textContent = orderSaved ? "Pedido registrado." : "Pedido montado.";
