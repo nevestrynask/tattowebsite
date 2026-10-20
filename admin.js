@@ -38,9 +38,23 @@
       const text = `Olá, ${o.name}! Vi seu pedido de tatuagem para ${date}. Vamos combinar um horário?`;
       let clientPhone = String(o.phone).replace(/\D/g, "");
       if (clientPhone.length === 10 || clientPhone.length === 11) clientPhone = "55" + clientPhone;
-      return `<article class="order-card"><div class="order-top"><h3>${esc(o.name)} · ${esc(o.style)}</h3><span>${date}</span></div><p>WhatsApp: ${esc(o.phone)} · ${esc(o.size_cm)} cm · ${esc(o.body_part)}</p><p>${esc(o.idea || "Sem descrição adicional")}</p><select aria-label="Status do pedido" data-order="${o.id}"><option value="novo">Novo</option><option value="em_conversa">Em conversa</option><option value="confirmado">Confirmado</option><option value="recusado">Recusado</option><option value="concluido">Concluído</option></select><br><a target="_blank" rel="noopener" href="https://wa.me/${clientPhone}?text=${encodeURIComponent(text)}">Conversar no WhatsApp ↗</a></article>`;
+      return `<article class="order-card"><div class="order-top"><h3>${esc(o.name)} · ${esc(o.style)}</h3><span>${date}</span></div><p>WhatsApp: ${esc(o.phone)} · ${esc(o.size_cm)} cm · ${esc(o.body_part)}</p><p>${esc(o.idea || "Sem descrição adicional")}</p><select aria-label="Status do pedido" data-order="${o.id}"><option value="novo">Novo</option><option value="em_conversa">Em conversa</option><option value="confirmado">Confirmado</option><option value="recusado">Recusado</option><option value="concluido">Concluído</option></select><br><a target="_blank" rel="noopener" href="https://wa.me/${clientPhone}?text=${encodeURIComponent(text)}">Conversar no WhatsApp ↗</a><br><button type="button" class="danger order-delete" data-delete-order="${o.id}">Excluir pedido</button></article>`;
     }).join("") : '<p class="empty">Ainda não há pedidos recebidos.</p>';
     data.forEach((o) => { const select = $(`[data-order="${o.id}"]`); select.value = o.status; select.addEventListener("change", async () => { const { error } = await client.from("orders").update({ status: select.value }).eq("id", o.id); notice(error ? error.message : "Status do pedido atualizado.", !!error); }); });
+    $("#ordersList").querySelectorAll("[data-delete-order]").forEach((button) => button.addEventListener("click", async () => {
+      const order = data.find((item) => item.id === button.dataset.deleteOrder);
+      if (!order || !confirm(`Excluir definitivamente o pedido de ${order.name}?`)) return;
+      button.disabled = true;
+      try {
+        const { error } = await client.from("orders").delete().eq("id", order.id);
+        if (error) throw error;
+        await loadOrders();
+        notice("Pedido excluído.");
+      } catch (error) {
+        button.disabled = false;
+        notice(error.message, true);
+      }
+    }));
   }
   function setAvailabilityChoice(value) {
     const form = $("#availabilityForm");
