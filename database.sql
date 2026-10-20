@@ -65,11 +65,9 @@ create table if not exists public.orders (
     body_part text not null,
     preferred_date date not null,
     idea text not null default '',
-    reference_image_url text not null default '',
     status text not null default 'novo' check (status in ('novo','em_conversa','confirmado','recusado','concluido')),
     created_at timestamptz not null default now()
 );
-alter table public.orders add column if not exists reference_image_url text not null default '';
 
 alter table public.admin_users enable row level security;
 alter table public.portfolio enable row level security;
@@ -113,13 +111,6 @@ grant select on public.admin_users to authenticated;
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values ('tattoo-portfolio', 'tattoo-portfolio', true, 8388608, array['image/jpeg','image/png','image/webp'])
 on conflict (id) do nothing;
-insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-values ('tattoo-references', 'tattoo-references', true, 8388608, array['image/jpeg','image/png','image/webp'])
-on conflict (id) do nothing;
-drop policy if exists "reference images are public" on storage.objects;
-create policy "reference images are public" on storage.objects for select to anon, authenticated using (bucket_id = 'tattoo-references');
-drop policy if exists "visitors upload reference images" on storage.objects;
-create policy "visitors upload reference images" on storage.objects for insert to anon, authenticated with check (bucket_id = 'tattoo-references' and (storage.foldername(name))[1] = 'references');
 drop policy if exists "portfolio images are public" on storage.objects;
 create policy "portfolio images are public" on storage.objects for select to anon, authenticated using (bucket_id = 'tattoo-portfolio');
 drop policy if exists "admins upload portfolio images" on storage.objects;

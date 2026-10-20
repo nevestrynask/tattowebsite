@@ -512,40 +512,6 @@
     }
     $("#fName").addEventListener("input", renderTicket);
 
-    var referencePreviewUrl = "", shareReferenceFile = null, shareReferenceMessage = "";
-    var referenceInput = $("#fReference");
-    referenceInput.addEventListener("change", function () {
-        var file = referenceInput.files[0];
-        $("#referenceError").textContent = "";
-        if (!file) return;
-        if (!/^image\/(jpeg|png|webp)$/.test(file.type) || file.size > 8 * 1024 * 1024) {
-            $("#referenceError").textContent = "Escolha uma imagem JPG, PNG ou WebP de até 8 MB.";
-            referenceInput.value = "";
-            return;
-        }
-        if (referencePreviewUrl) URL.revokeObjectURL(referencePreviewUrl);
-        referencePreviewUrl = URL.createObjectURL(file);
-        $("#referenceThumb").src = referencePreviewUrl;
-        $("#referenceName").textContent = file.name;
-        $("#referencePreview").hidden = false;
-    });
-    $("#removeReference").addEventListener("click", function () {
-        referenceInput.value = "";
-        $("#referencePreview").hidden = true;
-        $("#referenceThumb").removeAttribute("src");
-        $("#referenceName").textContent = "";
-        $("#referenceError").textContent = "";
-        if (referencePreviewUrl) URL.revokeObjectURL(referencePreviewUrl);
-        referencePreviewUrl = "";
-    });
-    $("#shareReference").addEventListener("click", async function () {
-        if (!shareReferenceFile || !navigator.share) return;
-        try {
-            await navigator.share({ files: [shareReferenceFile], title: "Pedido de tatuagem", text: shareReferenceMessage });
-        } catch (error) {
-            if (error.name !== "AbortError") $("#err").textContent = "Não foi possível abrir o compartilhamento. Use o link da imagem pelo WhatsApp.";
-        }
-    });
     $("#bookForm").addEventListener("submit", async function (e) {
         e.preventDefault();
         var name = $("#fName").value.trim(),
@@ -568,30 +534,7 @@
             $("#fPhone").focus();
             return;
         }
-        var referenceFile = referenceInput.files[0] || null;
-        if (referenceFile && (!/^image\/(jpeg|png|webp)$/.test(referenceFile.type) || referenceFile.size > 8 * 1024 * 1024)) {
-            $("#referenceError").textContent = "Escolha uma imagem JPG, PNG ou WebP de até 8 MB.";
-            return;
-        }
         err.textContent = "";
-        $("#referenceError").textContent = "";
-        var referenceUrl = "";
-        if (db && referenceFile) {
-            var extension = referenceFile.type === "image/png" ? "png" : referenceFile.type === "image/webp" ? "webp" : "jpg";
-            var referencePath = "references/" + crypto.randomUUID() + "." + extension;
-            var uploadedReference;
-            try {
-                uploadedReference = await db.storage.from("tattoo-references").upload(referencePath, referenceFile, { upsert: false, contentType: referenceFile.type });
-            } catch (uploadError) {
-                $("#referenceError").textContent = "Não foi possível enviar a imagem. Tente novamente ou remova a imagem para continuar.";
-                return;
-            }
-            if (uploadedReference.error) {
-                $("#referenceError").textContent = "Não foi possível enviar a imagem. Tente novamente ou remova a imagem para continuar.";
-                return;
-            }
-            referenceUrl = db.storage.from("tattoo-references").getPublicUrl(referencePath).data.publicUrl;
-        }
         var msg =
             "Olá, Duda! Quero agendar uma tatuagem.\n\nNome: " +
             name +
@@ -606,30 +549,15 @@
             "\nData de preferência: " +
             dateText() +
             "\nHorário: a combinar pelo WhatsApp" +
-            (idea ? "\n\nIdeia: " + idea : "") +
-            (referenceUrl ? "\n\nImagem de referência: " + referenceUrl : "");
+            (idea ? "\n\nIdeia: " + idea : "");
         var orderSaved = false;
         if (db) {
             var preferredDate = dateKey(st.date);
-            var savedOrder = await db.from("orders").insert({ name: name, phone: phone, style: st.style, size_cm: st.size, body_part: st.part, preferred_date: preferredDate, idea: idea, reference_image_url: referenceUrl });
+            var savedOrder = await db.from("orders").insert({ name: name, phone: phone, style: st.style, size_cm: st.size, body_part: st.part, preferred_date: preferredDate, idea: idea });
             orderSaved = !savedOrder.error;
         }
         $("#msg").textContent = msg;
         $("#wa").href = "https://wa.me/5543988051250?text=" + encodeURIComponent(msg);
-        $("#wa").textContent = referenceUrl ? "Abrir WhatsApp com link da imagem" : "Abrir WhatsApp";
-        shareReferenceFile = referenceFile;
-        shareReferenceMessage = msg;
-        var canShareReference = false;
-        try { canShareReference = !!(referenceFile && navigator.share && navigator.canShare && navigator.canShare({ files: [referenceFile] })); } catch (shareCheckError) {}
-        $("#shareReference").hidden = !canShareReference;
-        $("#shareReferenceHint").hidden = !referenceFile;
-        if (referenceFile) {
-            $("#shareReferenceHint").textContent = canShareReference
-                ? "Na próxima tela, escolha o WhatsApp e a conversa da Duda. A imagem vai junto com a mensagem."
-                : referenceUrl
-                    ? "A mensagem do WhatsApp incluirá o link direto da imagem de referência."
-                    : "Abra o WhatsApp pelo botão e anexe manualmente a imagem selecionada, pois este navegador não envia arquivos pelo compartilhamento.";
-        }
         done.classList.add("show");
         var heading = $("#done strong"), note = $("#done p");
         if (heading) heading.textContent = orderSaved ? "Pedido registrado." : "Pedido montado.";

@@ -35,13 +35,10 @@
     if (error) throw error;
     $("#ordersList").innerHTML = data.length ? data.map((o) => {
       const date = new Date(o.preferred_date + "T12:00:00").toLocaleDateString("pt-BR");
-      let text = `Olá, ${o.name}! Vi seu pedido de tatuagem para ${date}. Vamos combinar um horário?`;
+      const text = `Olá, ${o.name}! Vi seu pedido de tatuagem para ${date}. Vamos combinar um horário?`;
       let clientPhone = String(o.phone).replace(/\D/g, "");
       if (clientPhone.length === 10 || clientPhone.length === 11) clientPhone = "55" + clientPhone;
-      const referencePrefix = `${String(window.DN_SUPABASE_URL || "").replace(/\/$/, "")}/storage/v1/object/public/tattoo-references/`;
-      const referenceUrl = typeof o.reference_image_url === "string" && o.reference_image_url.startsWith(referencePrefix) ? o.reference_image_url : "";
-      if (referenceUrl) text += `\n\nImagem de referência: ${referenceUrl}`;
-      return `<article class="order-card"><div class="order-top"><h3>${esc(o.name)} · ${esc(o.style)}</h3><span>${date}</span></div><p>WhatsApp: ${esc(o.phone)} · ${esc(o.size_cm)} cm · ${esc(o.body_part)}</p><p>${esc(o.idea || "Sem descrição adicional")}</p>${referenceUrl ? `<a class="order-reference" target="_blank" rel="noopener" href="${esc(referenceUrl)}"><img src="${esc(referenceUrl)}" alt="Imagem de referência enviada por ${esc(o.name)}"><span>Ver imagem de referência ↗</span></a>` : ""}<select aria-label="Status do pedido" data-order="${o.id}"><option value="novo">Novo</option><option value="em_conversa">Em conversa</option><option value="confirmado">Confirmado</option><option value="recusado">Recusado</option><option value="concluido">Concluído</option></select><br><a target="_blank" rel="noopener" href="https://wa.me/${clientPhone}?text=${encodeURIComponent(text)}">Conversar no WhatsApp ↗</a></article>`;
+      return `<article class="order-card"><div class="order-top"><h3>${esc(o.name)} · ${esc(o.style)}</h3><span>${date}</span></div><p>WhatsApp: ${esc(o.phone)} · ${esc(o.size_cm)} cm · ${esc(o.body_part)}</p><p>${esc(o.idea || "Sem descrição adicional")}</p><select aria-label="Status do pedido" data-order="${o.id}"><option value="novo">Novo</option><option value="em_conversa">Em conversa</option><option value="confirmado">Confirmado</option><option value="recusado">Recusado</option><option value="concluido">Concluído</option></select><br><a target="_blank" rel="noopener" href="https://wa.me/${clientPhone}?text=${encodeURIComponent(text)}">Conversar no WhatsApp ↗</a></article>`;
     }).join("") : '<p class="empty">Ainda não há pedidos recebidos.</p>';
     data.forEach((o) => { const select = $(`[data-order="${o.id}"]`); select.value = o.status; select.addEventListener("change", async () => { const { error } = await client.from("orders").update({ status: select.value }).eq("id", o.id); notice(error ? error.message : "Status do pedido atualizado.", !!error); }); });
   }
