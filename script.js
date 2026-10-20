@@ -18,6 +18,16 @@
     if (window.supabase && window.DN_SUPABASE_URL && window.DN_SUPABASE_ANON_KEY && !window.DN_SUPABASE_URL.includes("COLE_")) {
         db = window.supabase.createClient(window.DN_SUPABASE_URL, window.DN_SUPABASE_ANON_KEY);
     }
+    function revealProfilePhotos() {
+        var images = document.querySelectorAll(".profile-photo");
+        Promise.all(Array.prototype.map.call(images, function (img) {
+            if (img.complete) return Promise.resolve();
+            return new Promise(function (resolve) {
+                img.addEventListener("load", resolve, { once: true });
+                img.addEventListener("error", resolve, { once: true });
+            });
+        })).then(function () { root.classList.remove("profile-pending"); });
+    }
     function safe(v) { return String(v || "").replace(/[&<>"']/g, function (c) { return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]; }); }
     var storyRevealTween = null;
     function wrapStoryWords(node) {
@@ -49,7 +59,7 @@
         if (window.ScrollTrigger) ScrollTrigger.refresh();
     }
     if (db) db.from("profile").select("display_name,bio,photo_url,hero_photo_url,story_photo_url").eq("id", 1).maybeSingle().then(function (res) {
-        if (res.error || !res.data) return;
+        if (res.error || !res.data) { revealProfilePhotos(); return; }
         var p = res.data;
         if (p.display_name) {
             $("#profileCaption").textContent = p.display_name + " · tatuadora";
@@ -64,7 +74,9 @@
         var storyPhoto = document.getElementById("storyPhoto");
         if (heroPhoto && (p.hero_photo_url || p.photo_url)) heroPhoto.src = p.hero_photo_url || p.photo_url;
         if (storyPhoto && (p.story_photo_url || p.photo_url)) storyPhoto.src = p.story_photo_url || p.photo_url;
-    });
+        revealProfilePhotos();
+    }).catch(revealProfilePhotos);
+    else revealProfilePhotos();
     try {
         var saved = localStorage.getItem("dn-theme");
         if (saved) root.setAttribute("data-theme", saved);

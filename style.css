@@ -716,6 +716,10 @@ h2.display {
     z-index: 1;
 }
 
+.profile-pending .profile-photo {
+    visibility: hidden;
+}
+
 .frame .sym {
     width: 46%;
     color: var(--red);
